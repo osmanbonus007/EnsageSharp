@@ -1,0 +1,236 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{215A36CA-85EA-4638-8C18-03D7BBAF1820}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DotaAllCombo</RootNamespace>
+    <AssemblyName>DotaAllCombo%27s by Vick</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PreBuildEvent />
+    <PostBuildEvent />
+    <OutputPath>bin\Release</OutputPath>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ensage">
+      <HintPath>..\..\..\..\..\Desktop\Dota 2\EnsageSharp\References\Ensage.dll</HintPath>
+    </Reference>
+    <Reference Include="Ensage.Common">
+      <HintPath>..\..\..\..\..\Desktop\Dota 2\EnsageSharp\References\Ensage.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>..\..\..\..\..\Desktop\Dota 2\EnsageSharp\References\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>..\..\..\..\..\Desktop\Dota 2\EnsageSharp\References\SharpDX.Direct3D9.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics">
+      <HintPath>..\..\..\..\..\Desktop\Dota 2\EnsageSharp\References\SharpDX.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\eViYkMhXe\References\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Runtime">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\Facades\System.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Addons\OthersAddons.cs" />
+    <Compile Include="Addons\CreepControl.cs" />
+    <Compile Include="Addons\_Addon.cs" />
+    <Compile Include="Extensions\Toolset.cs" />
+    <Compile Include="Heroes\AbaddonController.cs" />
+    <Compile Include="Heroes\WitchDoctorController.cs" />
+    <Compile Include="Heroes\WispController.cs" />
+    <Compile Include="Heroes\WinterWyvernController.cs" />
+    <Compile Include="Heroes\WarlockController.cs" />
+    <Compile Include="Heroes\VisageController.cs" />
+    <Compile Include="Heroes\VengefulSpiritController.cs" />
+    <Compile Include="Heroes\AbyssalUnderlordController.cs" />
+    <Compile Include="Heroes\AlchemistController.cs" />
+    <Compile Include="Heroes\AncientApparitionController.cs" />
+    <Compile Include="Heroes\AntimageController.cs" />
+    <Compile Include="Heroes\ArcWardenController.cs" />
+    <Compile Include="Heroes\BaneController.cs" />
+    <Compile Include="Heroes\BatriderController.cs" />
+    <Compile Include="Heroes\BeastmasterController.cs" />
+    <Compile Include="Heroes\BristlebackController.cs" />
+    <Compile Include="Heroes\CentaurController.cs" />
+    <Compile Include="Heroes\ChenController.cs" />
+    <Compile Include="Heroes\CrystalMaidenController.cs" />
+    <Compile Include="Heroes\DarkSeerController.cs" />
+    <Compile Include="Heroes\DazzleController.cs" />
+    <Compile Include="Heroes\DeathProphetController.cs" />
+    <Compile Include="Heroes\DisruptorController.cs" />
+    <Compile Include="Heroes\DoomBringerController.cs" />
+    <Compile Include="Heroes\DragonKnightController.cs" />
+    <Compile Include="Heroes\EarthshakerController.cs" />
+    <Compile Include="Heroes\ElderTitanController.cs" />
+    <Compile Include="Heroes\EnchantressController.cs" />
+    <Compile Include="Heroes\EnigmaController.cs" />
+    <Compile Include="Heroes\FacelessVoidController.cs" />
+    <Compile Include="Heroes\FurionController.cs" />
+    <Compile Include="Heroes\GyrocopterController.cs" />
+    <Compile Include="Heroes\HuskarController.cs" />
+    <Compile Include="Heroes\InvokerController.cs" />
+    <Compile Include="Heroes\JakiroController.cs" />
+    <Compile Include="Heroes\KeeperOfTheLightController.cs" />
+    <Compile Include="Heroes\KunkkaController.cs" />
+    <Compile Include="Heroes\LeshracController.cs" />
+    <Compile Include="Heroes\LichController.cs" />
+    <Compile Include="Heroes\LifeStealerController.cs" />
+    <Compile Include="Heroes\LoneDruidController.cs" />
+    <Compile Include="Heroes\LunaController.cs" />
+    <Compile Include="Heroes\LycanController.cs" />
+    <Compile Include="Heroes\MagnataurController.cs" />
+    <Compile Include="Heroes\MedusaController.cs" />
+    <Compile Include="Heroes\MiranaController.cs" />
+    <Compile Include="Heroes\Morphlingontroller.cs" />
+    <Compile Include="Heroes\NagaSirenController.cs" />
+    <Compile Include="Heroes\NecrolyteController.cs" />
+    <Compile Include="Heroes\NevermoreController.cs" />
+    <Compile Include="Heroes\ObsidianDestroyerController.cs" />
+    <Compile Include="Heroes\OgreMagiController.cs" />
+    <Compile Include="Heroes\PhantomLancerController.cs" />
+    <Compile Include="Heroes\PhoenixController.cs" />
+    <Compile Include="Heroes\PugnaController.cs" />
+    <Compile Include="Heroes\QueenOfPainController.cs" />
+    <Compile Include="Heroes\RattletrapController.cs" />
+    <Compile Include="Heroes\RazorController.cs" />
+    <Compile Include="Heroes\RubickController.cs" />
+    <Compile Include="Heroes\ShadowDemonController.cs" />
+    <Compile Include="Heroes\ShadowShamanController.cs" />
+    <Compile Include="Heroes\ShredderController.cs" />
+    <Compile Include="Heroes\SniperController.cs" />
+    <Compile Include="Heroes\SpectreController.cs" />
+    <Compile Include="Heroes\SpiritBreakerController.cs" />
+    <Compile Include="Heroes\StormSpiritController.cs" />
+    <Compile Include="Heroes\TechiesController.cs" />
+    <Compile Include="Heroes\TerrorbladeController.cs" />
+    <Compile Include="Heroes\AxeController.cs" />
+    <Compile Include="Heroes\BloodseekerController.cs" />
+    <Compile Include="Heroes\BountyHunterController.cs" />
+    <Compile Include="Heroes\BrewmasterController.cs" />
+    <Compile Include="Heroes\BroodmotherController.cs" />
+    <Compile Include="Heroes\ChaosKnightController.cs" />
+    <Compile Include="Heroes\ClinkzController.cs" />
+    <Compile Include="Heroes\DrowRangerController.cs" />
+    <Compile Include="Heroes\EarthSpiritController.cs" />
+    <Compile Include="Heroes\EmberSpiritController.cs" />
+    <Compile Include="Heroes\JuggernautController.cs" />
+    <Compile Include="Heroes\LegionCommanderController.cs" />
+    <Compile Include="Heroes\LinaController.cs" />
+    <Compile Include="Heroes\LionController.cs" />
+    <Compile Include="Heroes\MeepoController.cs" />
+    <Compile Include="Heroes\NightStalkerController.cs" />
+    <Compile Include="Heroes\NyxAssassinController.cs" />
+    <Compile Include="Heroes\OmniknightController.cs" />
+    <Compile Include="Heroes\OracleController.cs" />
+    <Compile Include="Heroes\PhantomAssassinController.cs" />
+    <Compile Include="Heroes\PuckController.cs" />
+    <Compile Include="Heroes\PudgeController.cs" />
+    <Compile Include="Heroes\RikiController.cs" />
+    <Compile Include="Heroes\SandKingController.cs" />
+    <Compile Include="Heroes\SilencerController.cs" />
+    <Compile Include="Heroes\SkeletonKingController.cs" />
+    <Compile Include="Heroes\SlardarController.cs" />
+    <Compile Include="Heroes\SlarkController.cs" />
+    <Compile Include="Heroes\SvenController.cs" />
+    <Compile Include="Heroes\TemplarAssassinController.cs" />
+    <Compile Include="Heroes\TidehunterController.cs" />
+    <Compile Include="Heroes\TinkerController.cs" />
+    <Compile Include="Heroes\TinyController.cs" />
+    <Compile Include="Heroes\TreantController.cs" />
+    <Compile Include="Heroes\TrollWarlordController.cs" />
+    <Compile Include="Heroes\TuskController.cs" />
+    <Compile Include="Heroes\UndyingController.cs" />
+    <Compile Include="Heroes\UrsaController.cs" />
+    <Compile Include="Heroes\VenomancerController.cs" />
+    <Compile Include="Heroes\ViperController.cs" />
+    <Compile Include="Heroes\WeaverController.cs" />
+    <Compile Include="Heroes\WindrunnerController.cs" />
+    <Compile Include="Heroes\ZuusController.cs" />
+    <Compile Include="Heroes\_HeroController.cs" />
+    <Compile Include="Heroes\SkywrathMageController.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Extensions\AssemblyExtensions.cs" />
+    <Compile Include="Service\AddonsManager.cs" />
+    <Compile Include="Service\Bootstrap.cs" />
+    <Compile Include="Service\Debug\Print.cs" />
+    <Compile Include="Service\HeroSelector.cs" />
+    <Compile Include="Service\MainMenu.cs" />
+    <Compile Include="Service\Utilites.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5.2 %28x86 и x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
