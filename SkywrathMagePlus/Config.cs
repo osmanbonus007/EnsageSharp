@@ -47,6 +47,10 @@ namespace SkywrathMagePlus
 
         public MenuItem<PriorityChanger> AntimageBreakerChanger { get; }
 
+        public MenuItem<bool> BladeMailItem { get; }
+
+        public MenuItem<bool> EulBladeMailItem { get; }
+
         private SpamMode SpamMode { get; }
 
         private bool Disposed { get; set; }
@@ -123,6 +127,12 @@ namespace SkywrathMagePlus
                 { "item_force_staff" },
                 { "item_medallion_of_courage" },
             }));
+
+            var BladeMailMenu = Factory.MenuWithTexture("Blade Mail", "item_blade_mail");
+            BladeMailItem = BladeMailMenu.Item("Cancel Combo", true);
+            BladeMailItem.Item.SetTooltip("Cancel Combo if there is enemy Blade Mail");
+            EulBladeMailItem = BladeMailMenu.Item("Use Eul", true);
+            EulBladeMailItem.Item.SetTooltip("Use Eul if there is BladeMail with ULT");
 
             var DrawingMenu = Factory.Menu("Drawing");
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);

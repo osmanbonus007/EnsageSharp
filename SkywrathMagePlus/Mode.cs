@@ -140,7 +140,7 @@ namespace SkywrathMagePlus
                 Target = TargetSelector.Active.GetTargets().FirstOrDefault();
             }
 
-            if (Target != null && !Target.HasModifier("modifier_item_blade_mail_reflect"))
+            if (Target != null && (!Config.BladeMailItem.Value || !Target.HasModifier("modifier_item_blade_mail_reflect")))
             {
                 if (!Target.IsMagicImmune() && !Target.IsLinkensProtected() && !AntimageShield())
                 {
@@ -255,6 +255,23 @@ namespace SkywrathMagePlus
 
         private void OnUpdate()
         {
+            if (Config.EulBladeMailItem.Value)
+            {
+                var Hero = EntityManager<Hero>.Entities.FirstOrDefault(
+                    x => !x.IsIllusion &&
+                    x.IsAlive &&
+                    x.IsVisible &&
+                    x.IsValid &&
+                    x.Team != Owner.Team &&
+                    x.HasModifier("modifier_item_blade_mail_reflect") &&
+                    x.HasModifier("modifier_skywrath_mystic_flare_aura_effect"));
+
+                if (Hero != null && Eul != null && Eul.CanBeCasted)
+                {
+                    Eul.UseAbility(Owner);
+                }
+            }
+            
             if (Config.ComboRadiusItem.Value)
             {
                 Context.Particle.DrawRange(
@@ -290,10 +307,8 @@ namespace SkywrathMagePlus
             }
 
             WShow = EntityManager<Hero>.Entities.OrderBy(
-                x => 
-                x.Distance2D(Owner)).FirstOrDefault(
-                x => 
-                !x.IsIllusion &&   
+                x => x.Distance2D(Owner)).FirstOrDefault(
+                x =>!x.IsIllusion &&   
                 x.IsAlive &&     
                 x.IsVisible &&    
                 x.IsValid &&
