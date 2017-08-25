@@ -313,7 +313,7 @@ namespace EnigmaPlus
                     new PredictionInput(
                         Owner,
                         OffTarget,
-                        0,
+                        1,
                         float.MaxValue,
                         2000,
                         420,

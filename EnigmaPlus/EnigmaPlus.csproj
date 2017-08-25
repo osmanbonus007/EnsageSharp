@@ -34,7 +34,7 @@
     </Reference>
     <Reference Include="PlaySharp.Toolkit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7e3dc52b16ce4f66, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dota 2\EnsageSharp\References\PlaySharp.Toolkit.dll</HintPath>
+      <HintPath>C:\Users\osman\Desktop\Dota 2\EnsageSharp\References\PlaySharp.Toolkit.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
       <HintPath>C:\Users\osman\Desktop\Dota 2\EnsageSharp\References\SharpDX.dll</HintPath>
