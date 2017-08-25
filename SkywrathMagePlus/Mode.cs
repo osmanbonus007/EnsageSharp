@@ -22,25 +22,27 @@ using SharpDX;
 
 namespace SkywrathMagePlus
 {
-    internal class SkywrathMageCombo : KeyPressOrbwalkingModeAsync
+    internal class Mode : KeyPressOrbwalkingModeAsync
     {
-        private bool CShotRadius { get; set; }
+        private bool WRadius { get; set; }
 
         private int Count { get; set; }
 
         private AbilityFactory AbilityFactory { get; }
 
-        private SkywrathMagePlusConfig Config { get; }
+        private Config Config { get; }
 
         private ITargetSelectorManager TargetSelector { get; }
 
         private IPredictionManager Prediction { get; }
 
-        private Hero CShotShow { get; set; }
+        private Hero WShow { get; set; }
 
         public Unit Target { get; set;}
 
-        private skywrath_mage_arcane_bolt ArcaneBolt { get; set; }
+        private Unit OffTarget { get; set; }
+
+        public skywrath_mage_arcane_bolt ArcaneBolt { get; set; }
 
         private skywrath_mage_concussive_shot ConcussiveShot { get; set; }
 
@@ -98,10 +100,10 @@ namespace SkywrathMagePlus
         [ItemBinding]
         public item_medallion_of_courage Medallion { get; set; }
 
-        public SkywrathMageCombo(
+        public Mode(
             IServiceContext context, 
-            Key key, 
-            SkywrathMagePlusConfig config) : base(context, key)
+            Key key,
+            Config config) : base(context, key)
         {
             Config = config;
             AbilityFactory = context.AbilityFactory;
@@ -119,8 +121,11 @@ namespace SkywrathMagePlus
                 {
                     TargetSelector.Activate();
                 }
-                    
-                Target = TargetSelector.Active.GetTargets().FirstOrDefault();
+
+                if (TargetSelector.IsActive)
+                {
+                    Target = TargetSelector.Active.GetTargets().FirstOrDefault();
+                }
 
                 if (Target != null)
                 {
@@ -130,14 +135,15 @@ namespace SkywrathMagePlus
                     }
                 }
             }
-            else if (Config.TargetItem.Value.SelectedValue.Contains("Default"))
+            else if (Config.TargetItem.Value.SelectedValue.Contains("Default") && TargetSelector.IsActive)
             {
                 Target = TargetSelector.Active.GetTargets().FirstOrDefault();
             }
 
             if (Target != null && !Target.HasModifier("modifier_item_blade_mail_reflect"))
             {
-                if (!Target.IsMagicImmune() && !Target.IsLinkensProtected())
+                
+                if (!Target.IsMagicImmune() && !Target.IsLinkensProtected() && !AntimageShield())
                 {
                     // AncientSeal
                     if (AncientSeal != null
@@ -152,8 +158,8 @@ namespace SkywrathMagePlus
                     if (ConcussiveShot != null
                         && Config.AbilityToggler.Value.IsEnabled(ConcussiveShot.Ability.Name)
                         && (!Config.WTargetItem
-                        || (Target == CShotShow
-                        || (CShotShow != null && Target.Distance2D(CShotShow) <= 250)))
+                        || (Target == WShow
+                        || (WShow != null && Target.Distance2D(WShow) <= 250)))
                         && ConcussiveShot.CanBeCasted
                         && Owner.Distance2D(Target.Position) <= Config.WRadiusItem.Value + 25)
                     {
@@ -197,7 +203,6 @@ namespace SkywrathMagePlus
                                 DubleMysticFlare ? -250 : -100,
                                 PredictionSkillshotType.SkillshotCircle,
                                 true)
-
                             {
                                 CollisionTypes = CollisionTypes.None
                             };
@@ -230,6 +235,15 @@ namespace SkywrathMagePlus
             }
         }
 
+        public bool AntimageShield()
+        {
+            var Shield = OffTarget.GetAbilityById(AbilityId.antimage_spell_shield);
+
+            return Shield != null 
+                && Shield.Cooldown == 0 
+                && OffTarget.GetItemById(AbilityId.item_ultimate_scepter) != null;
+        }
+
         private bool ActiveMysticFlare(Unit Target)
         {
             return Target.MovementSpeed < 240
@@ -254,10 +268,10 @@ namespace SkywrathMagePlus
                 Context.Particle.Remove("ComboRadius");
             }
 
-            if (CShotRadius)
+            if (WRadius)
             {
                 Count += 1;
-                CShotRadius = Count != 50;
+                WRadius = Count != 50;
 
                 Context.Particle.AddOrUpdate(
                     Owner,
@@ -275,7 +289,7 @@ namespace SkywrathMagePlus
                 Context.Particle.Remove("CShotRadius");
             }
 
-            CShotShow = EntityManager<Hero>.Entities.OrderBy(
+            WShow = EntityManager<Hero>.Entities.OrderBy(
                 x => 
                 x.Distance2D(Owner)).FirstOrDefault(
                 x => 
@@ -287,30 +301,34 @@ namespace SkywrathMagePlus
                 x.Distance2D(Owner) <= ConcussiveShot.Radius - 25);
 
             if (Config.WDrawItem.Value 
-                && CShotShow != null 
+                && WShow != null 
+                && ConcussiveShot
                 && ConcussiveShot.Ability.Cooldown <= 1)
             {
                 Context.Particle.AddOrUpdate(
-                    CShotShow, 
+                    WShow, 
                     "ConcussiveShot",
                     "particles/units/heroes/hero_skywrath_mage/skywrath_mage_concussive_shot.vpcf", 
                     ParticleAttachment.AbsOrigin,
                     false,
                     0,
-                    CShotShow.Position + new Vector3(0, 200, CShotShow.HealthBarOffset),
+                    WShow.Position + new Vector3(0, 200, WShow.HealthBarOffset),
                     1,
-                    CShotShow.Position + new Vector3(0, 200, CShotShow.HealthBarOffset),
+                    WShow.Position + new Vector3(0, 200, WShow.HealthBarOffset),
                     2,
                     new Vector3(1000));
             }
             else
             {
                 Context.Particle.Remove("ConcussiveShot");
-            }           
+            }
 
-            var OffTarget = TargetSelector.Active.GetTargets().FirstOrDefault();
+            if (TargetSelector.IsActive)
+            {
+                OffTarget = TargetSelector.Active.GetTargets().FirstOrDefault();
+            }
 
-            if (Target != null || OffTarget != null)
+            if ((Target != null || OffTarget != null) && !Config.SpamKeyItem.Value)
             {
                 Context.Particle.DrawTargetLine(
                     Owner, 
@@ -361,7 +379,7 @@ namespace SkywrathMagePlus
 
         private void CShotRadiusChanged(object sender, PropertyChangedEventArgs e)
         {
-            CShotRadius = true;
+            WRadius = true;
             Count = 0;
         }
     }

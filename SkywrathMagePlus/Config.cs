@@ -7,12 +7,13 @@ using Ensage.SDK.Menu;
 using SharpDX;
 
 using SkywrathMage.Features;
+using SkywrathMage;
 
 namespace SkywrathMagePlus
 {
-    internal class SkywrathMagePlusConfig : IDisposable
+    internal class Config : IDisposable
     {
-        private SkywrathMagePlus SkywrathMagePlus { get; }
+        public SkywrathMagePlus SkywrathMagePlus { get; }
 
         private MenuFactory Factory { get; }
 
@@ -30,6 +31,8 @@ namespace SkywrathMagePlus
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
+        public MenuItem<KeyBind> SpamKeyItem { get; }
+
         public MenuItem<bool> WTargetItem { get; }
 
         public MenuItem<Slider> WRadiusItem { get; }
@@ -40,9 +43,15 @@ namespace SkywrathMagePlus
 
         public LinkenBreaker LinkenBreaker { get; }
 
+        public MenuItem<AbilityToggler> AntimageBreakerToggler { get; }
+
+        public MenuItem<PriorityChanger> AntimageBreakerChanger { get; }
+
+        private SpamMode SpamMode { get; }
+
         private bool Disposed { get; set; }
 
-        public SkywrathMagePlusConfig(SkywrathMagePlus skywrathMagePlus)
+        public Config(SkywrathMagePlus skywrathMagePlus)
         {
             SkywrathMagePlus = skywrathMagePlus;
 
@@ -71,10 +80,10 @@ namespace SkywrathMagePlus
                 { "item_sheepstick", true }
             }));
 
-            var LinkenBreakerMenu = Factory.Menu("Linken Breaker");
+            var LinkenBreakerMenu = Factory.MenuWithTexture("Linken Breaker", "item_sphere");
             LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
-                { "skywrath_mage_ancient_seal", true },
+                { "skywrath_mage_arcane_bolt", true },
                 { "item_sheepstick", true},
                 { "item_rod_of_atos", true},
                 { "item_bloodthorn", true },
@@ -86,11 +95,30 @@ namespace SkywrathMagePlus
 
             LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
             {
-                { "skywrath_mage_ancient_seal" },
+                { "skywrath_mage_arcane_bolt" },
                 { "item_sheepstick" },
                 { "item_rod_of_atos" },
                 { "item_bloodthorn" },
                 { "item_orchid" },
+                { "item_cyclone" },
+                { "item_force_staff" },
+                { "item_medallion_of_courage" },
+            }));
+
+            var AntimageBreakerMenu = Factory.MenuWithTexture("Antimage Breaker", "antimage_spell_shield");
+            AntimageBreakerToggler = AntimageBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            {
+                { "skywrath_mage_arcane_bolt", true },
+                { "item_rod_of_atos", true},
+                { "item_cyclone", true },
+                { "item_force_staff", true },
+                { "item_medallion_of_courage", true },
+            }));
+
+            AntimageBreakerChanger = AntimageBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            {
+                { "skywrath_mage_arcane_bolt" },
+                { "item_rod_of_atos" },
                 { "item_cyclone" },
                 { "item_force_staff" },
                 { "item_medallion_of_courage" },
@@ -102,8 +130,9 @@ namespace SkywrathMagePlus
             WDrawItem = DrawingMenu.Item("W Show Target", true);
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
+            SpamKeyItem = Factory.Item("Q Spam Key", new KeyBind('F'));
             WTargetItem = Factory.Item("Use W Only Target", true);
-            WRadiusItem = Factory.Item("Use W in Radius", new Slider(1100, 0, 1600));
+            WRadiusItem = Factory.Item("Use W in Radius", new Slider(1200, 500, 1600));
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
 
             ComboItems = new ComboItems(this);
@@ -127,6 +156,8 @@ namespace SkywrathMagePlus
             if (disposing)
             {
                 Factory.Dispose();
+                SkywrathMagePlus.Context.Particle.Dispose();
+                SpamMode.Dispose();
             }
 
             Disposed = true;

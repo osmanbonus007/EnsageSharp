@@ -10,15 +10,14 @@ namespace SkywrathMage.Features
 {
     internal class ComboItems
     {
-        private SkywrathMagePlusConfig Config { get; }
+        private Config Config { get; }
 
-
-        public ComboItems(SkywrathMagePlusConfig config)
+        public ComboItems(Config config)
         {
             Config = config;
         }
 
-        public async Task Items(CancellationToken token, SkywrathMageCombo Combo)
+        public async Task Items(CancellationToken token, Mode Combo)
         {
             // Hex
             if (Combo.Hex != null

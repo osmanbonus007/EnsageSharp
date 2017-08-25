@@ -4,10 +4,11 @@ using System.Windows.Input;
 
 using Ensage;
 using Ensage.Common.Menu;
-
 using Ensage.SDK.Abilities;
 using Ensage.SDK.Service;
 using Ensage.SDK.Service.Metadata;
+
+using SkywrathMage;
 
 namespace SkywrathMagePlus
 {
@@ -15,15 +16,17 @@ namespace SkywrathMagePlus
         name: "SkywrathMagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.0",
+        version: "1.0.1.0",
         units: HeroId.npc_dota_hero_skywrath_mage)]
     internal class SkywrathMagePlus : Plugin
     {
-        private SkywrathMagePlusConfig Config { get; set; }
+        private Config Config { get; set; }
 
-        private SkywrathMageCombo Combo { get; set; }
+        public Mode Mode { get; set; }
 
-        private IServiceContext Context { get; }
+        public SpamMode SpamMode { get; set; }
+
+        public IServiceContext Context { get; }
 
         private Lazy<AbilityFactory> AbilityFactory { get; }
 
@@ -35,22 +38,24 @@ namespace SkywrathMagePlus
 
         protected override void OnActivate()
         {
-            Config = new SkywrathMagePlusConfig(this);
+            Config = new Config(this);
             Config.ComboKeyItem.Item.ValueChanged += HotkeyChanged;
 
-            var key = KeyInterop.KeyFromVirtualKey((int)Config.ComboKeyItem.Value.Key);
+            var Key = KeyInterop.KeyFromVirtualKey((int)Config.ComboKeyItem.Value.Key);
 
-            Combo = new SkywrathMageCombo(Context, key, Config);
-            Context.Orbwalker.RegisterMode(Combo);
+            Mode = new Mode(Context, Key, Config);
+            Context.Orbwalker.RegisterMode(Mode);
+
+            SpamMode = new SpamMode(Config, Mode);
         }
 
         protected override void OnDeactivate()
         {
-            Context.Orbwalker.UnregisterMode(Combo);
+            Context.Orbwalker.UnregisterMode(Mode);
 
             Config.ComboKeyItem.Item.ValueChanged -= HotkeyChanged;
 
-            Combo.Deactivate();
+            Mode.Deactivate();
             Config?.Dispose();
         }
 
@@ -64,7 +69,7 @@ namespace SkywrathMagePlus
             }
 
             var Key = KeyInterop.KeyFromVirtualKey((int)KeyCode);
-            Combo.Key = Key;
+            Mode.Key = Key;
         }
     }
 }
