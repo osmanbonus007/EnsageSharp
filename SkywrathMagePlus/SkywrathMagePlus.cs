@@ -16,7 +16,7 @@ namespace SkywrathMagePlus
         name: "SkywrathMagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.1.1",
+        version: "1.0.2.0",
         units: HeroId.npc_dota_hero_skywrath_mage)]
     internal class SkywrathMagePlus : Plugin
     {

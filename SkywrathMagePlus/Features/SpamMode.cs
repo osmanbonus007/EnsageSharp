@@ -81,7 +81,25 @@ namespace SkywrathMage
 
                 if (Context.TargetSelector.IsActive)
                 {
-                    Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
+                    if (Config.SpamUnitItem.Value)
+                    {
+                        Target = EntityManager<Unit>.Entities.OrderBy(
+                        order => order.Distance2D(Game.MousePosition)).FirstOrDefault(
+                        x => !x.IsIllusion &&
+                        x.IsAlive &&
+                        x.IsVisible &&
+                        x.IsValid &&
+                        (x.IsNeutral ||
+                        x.Name == "npc_dota_roshan" ||
+                        (x.Team != Context.Owner.Team &&
+                        x as Creep != null))
+                        && x.Distance2D(Game.MousePosition) <= 100);
+                    }
+                    
+                    if (Target == null)
+                    {
+                        Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
+                    }
                 }
 
                 if (Target != null)
@@ -91,25 +109,18 @@ namespace SkywrathMage
                         Context.TargetSelector.Deactivate();
                     }
                 }
-            }
-            else 
-            
-            if (Config.TargetItem.Value.SelectedValue.Contains("Default") 
-                && Context.TargetSelector.IsActive)
-            {
-                Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
-            }
+            } 
 
             if (Target != null)
             {
+                Context.Particle.DrawTargetLine(
+                    Context.Owner,
+                    "SpamTarget",
+                    Target.Position,
+                    Color.Green);
+
                 if (!Target.IsMagicImmune())
                 {
-                    Context.Particle.DrawTargetLine(
-                        Context.Owner,
-                        "SpamTarget",
-                        Target.Position,
-                        Color.Green);
-
                     // ArcaneBolt
                     if (Mode.ArcaneBolt != null
                         && Config.AbilityToggler.Value.IsEnabled(Config.SkywrathMagePlus.Mode.ArcaneBolt.Ability.Name)

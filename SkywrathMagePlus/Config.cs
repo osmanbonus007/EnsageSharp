@@ -33,6 +33,8 @@ namespace SkywrathMagePlus
 
         public MenuItem<KeyBind> SpamKeyItem { get; }
 
+        public MenuItem<bool> SpamUnitItem { get; }
+
         public MenuItem<bool> WTargetItem { get; }
 
         public MenuItem<Slider> WRadiusItem { get; }
@@ -140,7 +142,9 @@ namespace SkywrathMagePlus
             WDrawItem = DrawingMenu.Item("W Show Target", true);
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
-            SpamKeyItem = Factory.Item("Q Spam Key", new KeyBind('F'));
+            SpamKeyItem = Factory.Item("Q Spam Key", new KeyBind('Q'));
+            SpamUnitItem = Factory.Item("Q Spam Units", true);
+            SpamUnitItem.Item.SetTooltip("Creeps, Neutrals and Roshan");
             WTargetItem = Factory.Item("Use W Only Target", true);
             WRadiusItem = Factory.Item("Use W in Radius", new Slider(1200, 500, 1600));
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
