@@ -142,7 +142,6 @@ namespace SkywrathMagePlus
 
             if (Target != null && !Target.HasModifier("modifier_item_blade_mail_reflect"))
             {
-                
                 if (!Target.IsMagicImmune() && !Target.IsLinkensProtected() && !AntimageShield())
                 {
                     // AncientSeal
@@ -219,8 +218,8 @@ namespace SkywrathMagePlus
                 {
                     await Config.LinkenBreaker.Breaker(token, this);
                 }
-
-                if (Target.IsAttackImmune() || Target.IsInvulnerable())
+                
+                if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
                 {
                     Orbwalker.Move(Game.MousePosition);
                 }
@@ -237,11 +236,12 @@ namespace SkywrathMagePlus
 
         public bool AntimageShield()
         {
-            var Shield = OffTarget.GetAbilityById(AbilityId.antimage_spell_shield);
+            var Shield = Target.GetAbilityById(AbilityId.antimage_spell_shield);
 
             return Shield != null 
-                && Shield.Cooldown == 0 
-                && OffTarget.GetItemById(AbilityId.item_ultimate_scepter) != null;
+                && Shield.Cooldown == 0
+                && Shield.Level > 0
+                && Target.GetItemById(AbilityId.item_ultimate_scepter) != null;
         }
 
         private bool ActiveMysticFlare(Unit Target)
