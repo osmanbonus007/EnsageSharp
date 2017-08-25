@@ -223,7 +223,7 @@ namespace SkywrathMagePlus
                 {
                     Orbwalker.Move(Game.MousePosition);
                 }
-                else
+                else if (Target != null)
                 {
                     Orbwalker.OrbwalkTo(Target);
                 }

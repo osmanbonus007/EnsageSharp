@@ -33,6 +33,11 @@ namespace SkywrathMage.Features
                 BreakerChanger = Config.AntimageBreakerChanger.Value.Dictionary.Where(
                 z => Config.AntimageBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
             }
+
+            if (BreakerChanger == null)
+            {
+                return;
+            }
             
             foreach (var Order in BreakerChanger.ToList())
             {

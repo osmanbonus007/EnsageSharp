@@ -119,11 +119,11 @@ namespace SkywrathMage
                         await Await.Delay(Mode.ArcaneBolt.GetCastDelay(), token);
                     }
                 }
-                if (Target.IsAttackImmune() || Target.IsInvulnerable())
+                if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
                 {
                     Context.Orbwalker.Move(Game.MousePosition);
                 }
-                else
+                else if (Target != null)
                 {
                     Context.Orbwalker.OrbwalkTo(Target);
                 }
