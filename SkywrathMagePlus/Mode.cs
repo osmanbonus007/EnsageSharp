@@ -1,104 +1,31 @@
-﻿using System.ComponentModel;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Ensage;
 using Ensage.Common.Threading;
-using Ensage.SDK.Abilities;
-using Ensage.SDK.Abilities.Items;
-using Ensage.SDK.Abilities.npc_dota_hero_skywrath_mage;
 using Ensage.SDK.Extensions;
 using Ensage.SDK.Helpers;
-using Ensage.SDK.Inventory.Metadata;
 using Ensage.SDK.Orbwalker.Modes;
 using Ensage.SDK.Prediction;
 using Ensage.SDK.Prediction.Collision;
 using Ensage.SDK.Service;
 using Ensage.SDK.TargetSelector;
 
-using SharpDX;
-
 namespace SkywrathMagePlus
 {
     internal class Mode : KeyPressOrbwalkingModeAsync
     {
-        private bool WRadius { get; set; }
-
-        private int Count { get; set; }
-
-        private AbilityFactory AbilityFactory { get; }
-
         private Config Config { get; }
+
+        private SkywrathMagePlus Main { get; }
 
         private ITargetSelectorManager TargetSelector { get; }
 
         private IPredictionManager Prediction { get; }
 
-        private Hero WShow { get; set; }
-
-        public Unit Target { get; set;}
-
-        private Unit OffTarget { get; set; }
-
-        public skywrath_mage_arcane_bolt ArcaneBolt { get; set; }
-
-        private skywrath_mage_concussive_shot ConcussiveShot { get; set; }
-
-        public skywrath_mage_ancient_seal AncientSeal { get; set; }
-
-        private skywrath_mage_mystic_flare MysticFlare { get; set; }
-
-        public Dagon Dagon
-        {
-            get
-            {
-                return Dagon1 ?? Dagon2 ?? Dagon3 ?? Dagon4 ?? (Dagon)Dagon5;
-            }
-        }
-
-        [ItemBinding]
-        public item_sheepstick Hex { get; set; }
-
-        [ItemBinding]
-        public item_orchid Orchid { get; set; }
-
-        [ItemBinding]
-        public item_bloodthorn Bloodthorn { get; set; }
-
-        [ItemBinding]
-        public item_rod_of_atos RodofAtos { get; set; }
-
-        [ItemBinding]
-        public item_veil_of_discord Veil { get; set; }
-
-        [ItemBinding]
-        public item_ethereal_blade Ethereal { get; set; }
-
-        [ItemBinding]
-        public item_dagon Dagon1 { get; set; }
-
-        [ItemBinding]
-        public item_dagon_2 Dagon2 { get; set; }
-
-        [ItemBinding]
-        public item_dagon_3 Dagon3 { get; set; }
-
-        [ItemBinding]
-        public item_dagon_4 Dagon4 { get; set; }
-
-        [ItemBinding]
-        public item_dagon_5 Dagon5 { get; set; }
-
-        [ItemBinding]
-        public item_force_staff ForceStaff { get; set; }
-
-        [ItemBinding]
-        public item_cyclone Eul { get; set; }
-
-        [ItemBinding]
-        public item_medallion_of_courage Medallion { get; set; }
+        public Hero Target { get; set;}
 
         public Mode(
             IServiceContext context, 
@@ -106,7 +33,7 @@ namespace SkywrathMagePlus
             Config config) : base(context, key)
         {
             Config = config;
-            AbilityFactory = context.AbilityFactory;
+            Main = config.SkywrathMagePlus;
 
             TargetSelector = context.TargetSelector;
             Prediction = context.Prediction;
@@ -124,7 +51,7 @@ namespace SkywrathMagePlus
 
                 if (TargetSelector.IsActive)
                 {
-                    Target = TargetSelector.Active.GetTargets().FirstOrDefault();
+                    Target = TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
                 }
 
                 if (Target != null)
@@ -137,48 +64,50 @@ namespace SkywrathMagePlus
             }
             else if (Config.TargetItem.Value.SelectedValue.Contains("Default") && TargetSelector.IsActive)
             {
-                Target = TargetSelector.Active.GetTargets().FirstOrDefault();
+                Target = TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
             }
 
-            if (Target != null && (!Config.BladeMailItem.Value || !Target.HasModifier("modifier_item_blade_mail_reflect")))
+            if (Target != null
+                && (!Config.BladeMailItem.Value || !Target.HasModifier("modifier_item_blade_mail_reflect")) 
+                && !CancelCombo())
             {
-                if (!Target.IsMagicImmune() && !Target.IsLinkensProtected() && !AntimageShield())
+                var IsStun = Target.Modifiers.FirstOrDefault(x => x.IsStunDebuff);
+                var IsDebuff = Target.Modifiers.FirstOrDefault(x => x.IsDebuff && x.Name == "modifier_rod_of_atos_debuff");
+                if (!Target.IsMagicImmune() && !Target.IsLinkensProtected() && !AntimageShield(Target))
                 {
-                    // AncientSeal
-                    if (AncientSeal != null
-                        && Config.AbilityToggler.Value.IsEnabled(AncientSeal.Ability.Name)
-                        && AncientSeal.CanBeCasted)
+                    // Hex
+                    if (Main.Hex != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Hex.Item.Name)
+                        && Main.Hex.CanBeCasted
+                        && (IsStun == null || IsStun.RemainingTime <= 0.3))
                     {
-                        AncientSeal.UseAbility(Target);
-                        await Await.Delay(AncientSeal.GetCastDelay(Target), token);
+                        Main.Hex.UseAbility(Target);
+                        await Await.Delay(Main.Hex.GetCastDelay(Target), token);
                     }
 
-                    // ConcussiveShot
-                    if (ConcussiveShot != null
-                        && Config.AbilityToggler.Value.IsEnabled(ConcussiveShot.Ability.Name)
-                        && (!Config.WTargetItem
-                        || (Target == WShow
-                        || (WShow != null && Target.Distance2D(WShow) <= 250)))
-                        && ConcussiveShot.CanBeCasted
-                        && Owner.Distance2D(Target.Position) <= Config.WRadiusItem.Value + 25)
+                    // Orchid
+                    if (Main.Orchid != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Orchid.Item.Name)
+                        && Main.Orchid.CanBeCasted)
                     {
-                        ConcussiveShot.UseAbility();
-                        await Await.Delay(ConcussiveShot.GetCastDelay(), token);
+                        Main.Orchid.UseAbility(Target);
+                        await Await.Delay(Main.Orchid.GetCastDelay(Target), token);
                     }
 
-                    // ArcaneBolt
-                    if (ArcaneBolt != null
-                        && Config.AbilityToggler.Value.IsEnabled(ArcaneBolt.Ability.Name)
-                        && ArcaneBolt.CanBeCasted)
+                    // Bloodthorn
+                    if (Main.Bloodthorn != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Bloodthorn.Item.Name)
+                        && Main.Bloodthorn.CanBeCasted)
                     {
-                        ArcaneBolt.UseAbility(Target);
-                        await Await.Delay(ArcaneBolt.GetCastDelay(Target), token);
+                        Main.Bloodthorn.UseAbility(Target);
+                        await Await.Delay(Main.Bloodthorn.GetCastDelay(Target), token);
                     }
 
                     // MysticFlare
-                    if (MysticFlare != null
-                        && Config.AbilityToggler.Value.IsEnabled(MysticFlare.Ability.Name)
-                        && MysticFlare.CanBeCasted && ActiveMysticFlare(Target))
+                    if (Main.MysticFlare != null
+                        && Config.AbilityToggler.Value.IsEnabled(Main.MysticFlare.Ability.Name)
+                        && Main.MysticFlare.CanBeCasted 
+                        && ActiveMysticFlare(IsStun))
                     {
                         var CheckHero = EntityManager<Hero>.Entities.Where(
                             x =>
@@ -187,7 +116,7 @@ namespace SkywrathMagePlus
                             x.IsVisible &&
                             x.IsValid &&
                             x.Team != Owner.Team &&
-                            x.Distance2D(Owner) <= MysticFlare.CastRange);
+                            x.Distance2D(Owner) <= Main.MysticFlare.CastRange);
 
                         var UltimateScepter = Owner.GetItemById(AbilityId.item_ultimate_scepter) != null;
                         var DubleMysticFlare = UltimateScepter && CheckHero.Count() == 1;
@@ -198,7 +127,7 @@ namespace SkywrathMagePlus
                                 Target,
                                 0,
                                 float.MaxValue,
-                                MysticFlare.CastRange,
+                                Main.MysticFlare.CastRange,
                                 DubleMysticFlare ? -250 : -100,
                                 PredictionSkillshotType.SkillshotCircle,
                                 true)
@@ -208,15 +137,86 @@ namespace SkywrathMagePlus
 
                         var Output = Prediction.GetPrediction(Input);
 
-                        MysticFlare.UseAbility(Output.CastPosition);
-                        await Await.Delay(MysticFlare.GetCastDelay(Target), token);
+                        Main.MysticFlare.UseAbility(Output.CastPosition);
+                        await Await.Delay(Main.MysticFlare.GetCastDelay(Target), token);
                     }
 
-                    await Config.ComboItems.Items(token, this);
+                    // RodofAtos
+                    if (Main.RodofAtos != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.RodofAtos.Item.Name)
+                        && Main.RodofAtos.CanBeCasted
+                        && (IsStun == null || IsStun.RemainingTime <= 0.5)
+                        && (IsDebuff == null || IsDebuff.RemainingTime <= 0.5))
+                    {
+                        Main.RodofAtos.UseAbility(Target);
+                        await Await.Delay(Main.RodofAtos.GetCastDelay(Target), token);
+                    }
+
+                    // AncientSeal
+                    if (Main.AncientSeal != null
+                        && Config.AbilityToggler.Value.IsEnabled(Main.AncientSeal.Ability.Name)
+                        && Main.AncientSeal.CanBeCasted)
+                    {
+                        Main.AncientSeal.UseAbility(Target);
+                        await Await.Delay(Main.AncientSeal.GetCastDelay(Target), token);
+                    }
+
+                    // ConcussiveShot
+                    if (Main.ConcussiveShot != null
+                        && Config.AbilityToggler.Value.IsEnabled(Main.ConcussiveShot.Ability.Name)
+                        && (!Config.WTargetItem
+                        || (Target == Config.UpdateMode.WShow
+                        || (Config.UpdateMode.WShow != null && Target.Distance2D(Config.UpdateMode.WShow) <= 250)))
+                        && Main.ConcussiveShot.CanBeCasted
+                        && Owner.Distance2D(Target.Position) <= Config.WRadiusItem.Value + 25)
+                    {
+                        Main.ConcussiveShot.UseAbility();
+                        await Await.Delay(Main.ConcussiveShot.GetCastDelay(), token);
+                    }
+
+                    // ArcaneBolt
+                    if (Main.ArcaneBolt != null
+                        && Config.AbilityToggler.Value.IsEnabled(Main.ArcaneBolt.Ability.Name)
+                        && Main.ArcaneBolt.CanBeCasted)
+                    {
+                        Main.ArcaneBolt.UseAbility(Target);
+                        await Await.Delay(Main.ArcaneBolt.GetCastDelay(Target), token);
+                    }
+
+                    // Veil
+                    if (Main.Veil != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Veil.Item.Name)
+                        && Main.Veil.CanBeCasted)
+                    {
+                        Main.Veil.UseAbility(Target.Position);
+                        await Await.Delay(Main.Veil.GetCastDelay(Target), token);
+                    }
+
+                    // Ethereal
+                    if (Main.Ethereal != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Ethereal.Item.Name)
+                        && Main.Ethereal.CanBeCasted)
+                    {
+                        Main.Ethereal.UseAbility(Target);
+                        await Await.Delay(Main.Ethereal.GetCastDelay(Target), token);
+                    }
+
+                    // Dagon
+                    if (Main.Dagon != null
+                        && Config.ItemsToggler.Value.IsEnabled("item_dagon_5")
+                        && Main.Dagon.CanBeCasted
+                        && (Main.AncientSeal == null || (Target.HasModifier("modifier_skywrath_mage_ancient_seal") && !Main.AncientSeal.CanBeCasted)
+                        || !Config.AbilityToggler.Value.IsEnabled(Main.AncientSeal.Ability.Name))
+                        && (Main.Ethereal == null || (Target.IsEthereal() && !Main.Ethereal.CanBeCasted)
+                        || !Config.ItemsToggler.Value.IsEnabled(Main.Ethereal.Item.Name)))
+                    {
+                        Main.Dagon.UseAbility(Target);
+                        await Await.Delay(Main.Dagon.GetCastDelay(Target), token);
+                    }
                 }
                 else
                 {
-                    await Config.LinkenBreaker.Breaker(token, this);
+                    await Config.LinkenBreaker.Breaker(token, Target);
                 }
                 
                 if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
@@ -234,7 +234,7 @@ namespace SkywrathMagePlus
             }
         }
 
-        public bool AntimageShield()
+        public bool AntimageShield(Hero Target)
         {
             var Shield = Target.GetAbilityById(AbilityId.antimage_spell_shield);
 
@@ -244,158 +244,26 @@ namespace SkywrathMagePlus
                 && Target.GetItemById(AbilityId.item_ultimate_scepter) != null;
         }
 
-        private bool ActiveMysticFlare(Unit Target)
+        private bool ActiveMysticFlare(Modifier IsStun)
         {
             return Target.MovementSpeed < 240
-                || Target.IsStunned()
-                || Target.HasModifier("modifier_rod_of_atos_debuff")
-                && (Target.HasModifier("modifier_skywrath_mage_concussive_shot_slow")
-                || Target.HasModifier("modifier_sheepstick_debuff"));
+                || (IsStun != null && IsStun.Duration >= 1)
+                || Target.HasModifier("modifier_rod_of_atos_debuff");
         }
 
-        private void OnUpdate()
+        private bool CancelCombo()
         {
-            if (Config.EulBladeMailItem.Value)
-            {
-                var Hero = EntityManager<Hero>.Entities.FirstOrDefault(
-                    x => !x.IsIllusion &&
-                    x.IsAlive &&
-                    x.IsVisible &&
-                    x.IsValid &&
-                    x.Team != Owner.Team &&
-                    x.HasModifier("modifier_item_blade_mail_reflect") &&
-                    x.HasModifier("modifier_skywrath_mystic_flare_aura_effect"));
-
-                if (Hero != null && Eul != null && Eul.CanBeCasted)
-                {
-                    Eul.UseAbility(Owner);
-                }
-            }
-            
-            if (Config.ComboRadiusItem.Value)
-            {
-                Context.Particle.DrawRange(
-                    Owner, 
-                    "ComboRadius", 
-                    ArcaneBolt.CastRange, 
-                    Color.Aqua);
-            }
-            else
-            {
-                Context.Particle.Remove("ComboRadius");
-            }
-
-            if (WRadius)
-            {
-                Count += 1;
-                WRadius = Count != 50;
-
-                Context.Particle.AddOrUpdate(
-                    Owner,
-                    "CShotRadius",
-                    "materials/ensage_ui/particles/range_display_mod.vpcf",
-                    ParticleAttachment.AbsOriginFollow,
-                    true,
-                    1,
-                    new Vector3(Config.WRadiusItem.Value, 255, 0),
-                    2,
-                    new Vector3(0, 255, 255));
-            }
-            else
-            {
-                Context.Particle.Remove("CShotRadius");
-            }
-
-            WShow = EntityManager<Hero>.Entities.OrderBy(
-                x => x.Distance2D(Owner)).FirstOrDefault(
-                x =>!x.IsIllusion &&   
-                x.IsAlive &&     
-                x.IsVisible &&    
-                x.IsValid &&
-                x.Team != Owner.Team &&
-                x.Distance2D(Owner) <= ConcussiveShot.Radius - 25);
-
-            if (Config.WDrawItem.Value 
-                && WShow != null 
-                && ConcussiveShot
-                && ConcussiveShot.Ability.Cooldown <= 1)
-            {
-                Context.Particle.AddOrUpdate(
-                    WShow, 
-                    "ConcussiveShot",
-                    "particles/units/heroes/hero_skywrath_mage/skywrath_mage_concussive_shot.vpcf", 
-                    ParticleAttachment.AbsOrigin,
-                    false,
-                    0,
-                    WShow.Position + new Vector3(0, 200, WShow.HealthBarOffset),
-                    1,
-                    WShow.Position + new Vector3(0, 200, WShow.HealthBarOffset),
-                    2,
-                    new Vector3(1000));
-            }
-            else
-            {
-                Context.Particle.Remove("ConcussiveShot");
-            }
-
-            if (TargetSelector.IsActive)
-            {
-                OffTarget = TargetSelector.Active.GetTargets().FirstOrDefault();
-            }
-
-            if ((Target != null || OffTarget != null) && !Config.SpamKeyItem.Value)
-            {
-                Context.Particle.DrawTargetLine(
-                    Owner, 
-                    "Target", 
-                    Target != null ? Target.Position : OffTarget.Position, 
-                    Target != null ? Color.Red : Color.Aqua);
-            }
-            else
-            {
-                Context.Particle.Remove("Target");
-            }
-
-            if (!CanExecute && Target != null)
-            {
-                if (!TargetSelector.IsActive)
-                {
-                    TargetSelector.Activate();
-                }
-
-                Target = null;
-            }
+            return Target.HasModifier("modifier_eul_cyclone");
         }
 
         protected override void OnActivate()
         {
             base.OnActivate();
-
-            Config.WRadiusItem.PropertyChanged += CShotRadiusChanged;
-
-            Context.Inventory.Attach(this);
-
-            UpdateManager.Subscribe(OnUpdate, 25);
-
-            ArcaneBolt = AbilityFactory.GetAbility<skywrath_mage_arcane_bolt>();
-            ConcussiveShot = AbilityFactory.GetAbility<skywrath_mage_concussive_shot>();
-            AncientSeal = AbilityFactory.GetAbility<skywrath_mage_ancient_seal>();
-            MysticFlare = AbilityFactory.GetAbility<skywrath_mage_mystic_flare>();
         }
 
         protected override void OnDeactivate()
         {
-            Context.Inventory.Detach(this);
-
-            Config.WRadiusItem.PropertyChanged -= CShotRadiusChanged;
-
             base.OnDeactivate();
-        }
-
-        private void CShotRadiusChanged(object sender, PropertyChangedEventArgs e)
-        {
-            WRadius = true;
-            Count = 0;
         }
     }
 }

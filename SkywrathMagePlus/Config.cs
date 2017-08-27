@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Input;
 
 using Ensage.Common.Menu;
 using Ensage.SDK.Menu;
 
 using SharpDX;
 
-using SkywrathMage.Features;
-using SkywrathMage;
+using SkywrathMagePlus.Features;
 
 namespace SkywrathMagePlus
 {
     internal class Config : IDisposable
     {
-        public SkywrathMagePlus SkywrathMagePlus { get; }
-
         private MenuFactory Factory { get; }
 
         public MenuItem<AbilityToggler> AbilityToggler { get; }
 
         public MenuItem<AbilityToggler> ItemsToggler { get; }
+
+        public MenuItem<AbilityToggler> AutoAbilitiesToggler { get; }
+
+        public MenuItem<AbilityToggler> AutoItemsToggler { get; }
 
         public MenuItem<AbilityToggler> LinkenBreakerToggler { get; }
 
@@ -41,10 +43,6 @@ namespace SkywrathMagePlus
 
         public MenuItem<StringList> TargetItem { get; }
 
-        public ComboItems ComboItems { get; }
-
-        public LinkenBreaker LinkenBreaker { get; }
-
         public MenuItem<AbilityToggler> AntimageBreakerToggler { get; }
 
         public MenuItem<PriorityChanger> AntimageBreakerChanger { get; }
@@ -53,7 +51,17 @@ namespace SkywrathMagePlus
 
         public MenuItem<bool> EulBladeMailItem { get; }
 
+        public SkywrathMagePlus SkywrathMagePlus { get; }
+
+        public Mode Mode { get; }
+
+        public UpdateMode UpdateMode { get; }
+
+        public LinkenBreaker LinkenBreaker { get; }
+
         private SpamMode SpamMode { get; }
+
+        private AutoAbility AutoAbility { get; }
 
         private bool Disposed { get; set; }
 
@@ -74,6 +82,28 @@ namespace SkywrathMagePlus
 
             var ItemsMenu = Factory.Menu("Items");
             ItemsToggler = ItemsMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            {
+                { "item_ghost", true },
+                { "item_shivas_guard", true },
+                { "item_dagon_5", true },
+                { "item_veil_of_discord", true },
+                { "item_ethereal_blade", true },
+                { "item_rod_of_atos", true },
+                { "item_bloodthorn", true },
+                { "item_orchid", true },
+                { "item_sheepstick", true }
+            }));
+
+            var AutoComboMenu = Factory.Menu("Auto Combo");
+            AutoAbilitiesToggler = AutoComboMenu.Item("Abilities: ", new AbilityToggler(new Dictionary<string, bool>
+            {
+                { "skywrath_mage_mystic_flare", true },
+                { "skywrath_mage_ancient_seal", true },
+                { "skywrath_mage_concussive_shot", true },
+                { "skywrath_mage_arcane_bolt", true }
+            }));
+
+            AutoItemsToggler = AutoComboMenu.Item("Items: ", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "item_ghost", true },
                 { "item_shivas_guard", true },
@@ -149,9 +179,30 @@ namespace SkywrathMagePlus
             WRadiusItem = Factory.Item("Use W in Radius", new Slider(1200, 500, 1600));
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
 
-            ComboItems = new ComboItems(this);
+            ComboKeyItem.Item.ValueChanged += HotkeyChanged;
+
+            var Key = KeyInterop.KeyFromVirtualKey((int)ComboKeyItem.Value.Key);
+
+            Mode = new Mode(SkywrathMagePlus.Context, Key, this);
+            SkywrathMagePlus.Context.Orbwalker.RegisterMode(Mode);
 
             LinkenBreaker = new LinkenBreaker(this);
+            SpamMode = new SpamMode(this, SkywrathMagePlus.Context);
+            AutoAbility = new AutoAbility(this, Mode, SkywrathMagePlus.Context);
+            UpdateMode = new UpdateMode(this);
+        }
+
+        private void HotkeyChanged(object sender, OnValueChangeEventArgs e)
+        {
+            var KeyCode = e.GetNewValue<KeyBind>().Key;
+
+            if (KeyCode == e.GetOldValue<KeyBind>().Key)
+            {
+                return;
+            }
+
+            var Key = KeyInterop.KeyFromVirtualKey((int)KeyCode);
+            Mode.Key = Key;
         }
 
         public void Dispose()
@@ -170,8 +221,13 @@ namespace SkywrathMagePlus
             if (disposing)
             {
                 Factory.Dispose();
-                SkywrathMagePlus.Context.Particle.Dispose();
+                UpdateMode.Dispose();
+                AutoAbility.Dispose();
+                SkywrathMagePlus.Context.Orbwalker.UnregisterMode(Mode);
+                Mode.Deactivate();
                 SpamMode.Dispose();
+                SkywrathMagePlus.Context.Particle.Dispose();
+                ComboKeyItem.Item.ValueChanged -= HotkeyChanged;
             }
 
             Disposed = true;

@@ -6,29 +6,33 @@ using System.Threading.Tasks;
 using Ensage.Common.Threading;
 using Ensage.SDK.Extensions;
 
-using SkywrathMagePlus;
+using Ensage;
+using System;
 
-namespace SkywrathMage.Features
+namespace SkywrathMagePlus.Features
 {
     internal class LinkenBreaker
     {
         private Config Config { get; }
+
+        private SkywrathMagePlus Main { get; set; }
 
         private IOrderedEnumerable<KeyValuePair<string, uint>> BreakerChanger { get; set; }
 
         public LinkenBreaker(Config config)
         {
             Config = config;
+            Main = config.SkywrathMagePlus;
         }
 
-        public async Task Breaker(CancellationToken token, Mode Mode)
+        public async Task Breaker(CancellationToken token, Hero Target)
         {
-            if (Mode.Target.IsLinkensProtected())
+            if (Target.IsLinkensProtected())
             {
                 BreakerChanger = Config.LinkenBreakerChanger.Value.Dictionary.Where(
                 z => Config.LinkenBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
             }
-            else if (Mode.AntimageShield())
+            else if (AntimageShield(Target))
             {
                 BreakerChanger = Config.AntimageBreakerChanger.Value.Dictionary.Where(
                 z => Config.AntimageBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
@@ -42,85 +46,95 @@ namespace SkywrathMage.Features
             foreach (var Order in BreakerChanger.ToList())
             {
                 // Medallion
-                if (Mode.Medallion != null
-                    && Mode.Medallion.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.Medallion.CanBeCasted)
+                if (Main.Medallion != null
+                    && Main.Medallion.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Medallion.CanBeCasted)
                 {
-                    Mode.Medallion.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.Medallion.GetCastDelay(Mode.Target), token);
+                    Main.Medallion.UseAbility(Target);
+                    await Await.Delay(Main.Medallion.GetCastDelay(Target), token);
                 }
 
                 // Eul
-                if (Mode.Eul != null
-                    && Mode.Eul.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.Eul.CanBeCasted)
+                if (Main.Eul != null
+                    && Main.Eul.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Eul.CanBeCasted)
                 {
-                    Mode.Eul.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.Eul.GetCastDelay(Mode.Target), token);
+                    Main.Eul.UseAbility(Target);
+                    await Await.Delay(Main.Eul.GetCastDelay(Target), token);
                 }
 
                 // ForceStaff
-                if (Mode.ForceStaff != null
-                    && Mode.ForceStaff.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.ForceStaff.CanBeCasted)
+                if (Main.ForceStaff != null
+                    && Main.ForceStaff.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.ForceStaff.CanBeCasted)
                 {
-                    Mode.ForceStaff.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.ForceStaff.GetCastDelay(Mode.Target), token);
+                    Main.ForceStaff.UseAbility(Target);
+                    await Await.Delay(Main.ForceStaff.GetCastDelay(Target), token);
                 }
 
                 // Orchid
-                if (Mode.Orchid != null
-                    && Mode.Orchid.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.Orchid.CanBeCasted)
+                if (Main.Orchid != null
+                    && Main.Orchid.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Orchid.CanBeCasted)
                 {
-                    Mode.Orchid.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.Orchid.GetCastDelay(Mode.Target), token);
+                    Main.Orchid.UseAbility(Target);
+                    await Await.Delay(Main.Orchid.GetCastDelay(Target), token);
                 }
 
                 // Bloodthorn
-                if (Mode.Bloodthorn != null
-                    && Mode.Bloodthorn.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.Bloodthorn.CanBeCasted)
+                if (Main.Bloodthorn != null
+                    && Main.Bloodthorn.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Bloodthorn.CanBeCasted)
                 {
-                    Mode.Bloodthorn.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.Bloodthorn.GetCastDelay(Mode.Target), token);
+                    Main.Bloodthorn.UseAbility(Target);
+                    await Await.Delay(Main.Bloodthorn.GetCastDelay(Target), token);
                 }
 
                 // RodofAtos
-                if (Mode.RodofAtos != null
-                    && Mode.RodofAtos.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.RodofAtos.CanBeCasted)
+                if (Main.RodofAtos != null
+                    && Main.RodofAtos.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.RodofAtos.CanBeCasted)
                 {
-                    Mode.RodofAtos.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.RodofAtos.GetCastDelay(Mode.Target), token);
+                    Main.RodofAtos.UseAbility(Target);
+                    await Await.Delay(Main.RodofAtos.GetCastDelay(Target), token);
                 }
 
                 // ArcaneBolt
-                if (Mode.ArcaneBolt != null
-                    && Mode.ArcaneBolt.Ability.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.ArcaneBolt.CanBeCasted)
+                if (Main.ArcaneBolt != null
+                    && Main.ArcaneBolt.Ability.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.ArcaneBolt.CanBeCasted)
                 {
-                    Mode.ArcaneBolt.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.ArcaneBolt.GetCastDelay(Mode.Target), token);
+                    Main.ArcaneBolt.UseAbility(Target);
+                    await Await.Delay(Main.ArcaneBolt.GetCastDelay(Target), token);
                 }
 
                 // Hex
-                if (Mode.Hex != null
-                    && Mode.Hex.Item.Name == Order.Key
-                    && (Mode.Target.IsLinkensProtected() || Mode.AntimageShield())
-                    && Mode.Hex.CanBeCasted)
+                if (Main.Hex != null
+                    && Main.Hex.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Hex.CanBeCasted)
                 {
-                    Mode.Hex.UseAbility(Mode.Target);
-                    await Await.Delay(Mode.Hex.GetCastDelay(Mode.Target), token);
+                    Main.Hex.UseAbility(Target);
+                    await Await.Delay(Main.Hex.GetCastDelay(Target), token);
                 }
             }
+        }
+
+        public bool AntimageShield(Hero Target)
+        {
+            var Shield = Target.GetAbilityById(AbilityId.antimage_spell_shield);
+
+            return Shield != null
+                && Shield.Cooldown == 0
+                && Shield.Level > 0
+                && Target.GetItemById(AbilityId.item_ultimate_scepter) != null;
         }
     }
 }

@@ -12,16 +12,13 @@ using Ensage.SDK.Extensions;
 
 using SharpDX;
 
-using Config = SkywrathMagePlus.Config;
-using Mode = SkywrathMagePlus.Mode;
-
-namespace SkywrathMage
+namespace SkywrathMagePlus
 {
     internal class SpamMode
     {
         private Config Config { get; }
 
-        private Mode Mode { get; }
+        private SkywrathMagePlus Main { get; }
 
         private IServiceContext Context { get; }
 
@@ -29,11 +26,11 @@ namespace SkywrathMage
 
         private Unit Target { get; set; }
 
-        public SpamMode(Config config, Mode mode)
+        public SpamMode(Config config, IServiceContext context)
         {
             Config = config;
-            Mode = mode;
-            Context = config.SkywrathMagePlus.Context;
+            Main = config.SkywrathMagePlus;
+            Context = context;
 
             config.SpamKeyItem.PropertyChanged += SpamKeyChanged;
 
@@ -122,12 +119,12 @@ namespace SkywrathMage
                 if (!Target.IsMagicImmune())
                 {
                     // ArcaneBolt
-                    if (Mode.ArcaneBolt != null
-                        && Config.AbilityToggler.Value.IsEnabled(Config.SkywrathMagePlus.Mode.ArcaneBolt.Ability.Name)
-                        && Mode.ArcaneBolt.CanBeCasted)
+                    if (Main.ArcaneBolt != null
+                        && Config.AbilityToggler.Value.IsEnabled(Main.ArcaneBolt.Ability.Name)
+                        && Main.ArcaneBolt.CanBeCasted)
                     {
-                        Mode.ArcaneBolt.UseAbility(Target);
-                        await Await.Delay(Mode.ArcaneBolt.GetCastDelay(), token);
+                        Main.ArcaneBolt.UseAbility(Target);
+                        await Await.Delay(Main.ArcaneBolt.GetCastDelay(), token);
                     }
                 }
                 if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
