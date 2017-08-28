@@ -81,7 +81,7 @@ namespace BeAwarePlus.ParticleChecker
                     GlobalMiniMap.MiniMapList.Add(new GlobalMiniMap.MiniMap(
                         End,
                         true,
-                        "",
+                        "TP",
                         Position.WorldToMinimap(),
                         Hero.GetDisplayName(),
                         HeroColor));
@@ -98,7 +98,7 @@ namespace BeAwarePlus.ParticleChecker
                     if (!Team)
                     {
                         GlobalWorld.WorldList.Add(new GlobalWorld.World(
-                            "",
+                            "TP",
                             Position,
                             Hero.Name.Substring("npc_dota_hero_".Length),
                             AbilityTexturName));
@@ -114,8 +114,9 @@ namespace BeAwarePlus.ParticleChecker
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 //ignore
             }
         }

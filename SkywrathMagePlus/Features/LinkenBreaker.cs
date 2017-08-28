@@ -1,110 +1,140 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Ensage.Common.Threading;
 using Ensage.SDK.Extensions;
 
-using SkywrathMagePlus;
+using Ensage;
+using System;
 
-namespace SkywrathMage.Features
+namespace SkywrathMagePlus.Features
 {
     internal class LinkenBreaker
     {
-        private SkywrathMagePlusConfig Config { get; }
+        private Config Config { get; }
 
-        public LinkenBreaker(SkywrathMagePlusConfig config)
+        private SkywrathMagePlus Main { get; set; }
+
+        private IOrderedEnumerable<KeyValuePair<string, uint>> BreakerChanger { get; set; }
+
+        public LinkenBreaker(Config config)
         {
             Config = config;
+            Main = config.SkywrathMagePlus;
         }
 
-        public async Task Breaker(CancellationToken token, SkywrathMageCombo Combo)
+        public async Task Breaker(CancellationToken token, Hero Target)
         {
-            var LinkenBreakerChanger = Config.LinkenBreakerChanger.Value.Dictionary.Where(
+            if (Target.IsLinkensProtected())
+            {
+                BreakerChanger = Config.LinkenBreakerChanger.Value.Dictionary.Where(
                 z => Config.LinkenBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
+            }
+            else if (AntimageShield(Target))
+            {
+                BreakerChanger = Config.AntimageBreakerChanger.Value.Dictionary.Where(
+                z => Config.AntimageBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
+            }
 
-            foreach (var Order in LinkenBreakerChanger.ToList())
+            if (BreakerChanger == null)
+            {
+                return;
+            }
+            
+            foreach (var Order in BreakerChanger.ToList())
             {
                 // Medallion
-                if (Combo.Medallion != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.Medallion.Item.Name == Order.Key
-                    && Combo.Medallion.CanBeCasted)
+                if (Main.Medallion != null
+                    && Main.Medallion.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Medallion.CanBeCasted)
                 {
-                    Combo.Medallion.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.Medallion.GetCastDelay(Combo.Target), token);
+                    Main.Medallion.UseAbility(Target);
+                    await Await.Delay(Main.Medallion.GetCastDelay(Target), token);
                 }
 
                 // Eul
-                if (Combo.Eul != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.Eul.Item.Name == Order.Key
-                    && Combo.Eul.CanBeCasted)
+                if (Main.Eul != null
+                    && Main.Eul.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Eul.CanBeCasted)
                 {
-                    Combo.Eul.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.Eul.GetCastDelay(Combo.Target), token);
+                    Main.Eul.UseAbility(Target);
+                    await Await.Delay(Main.Eul.GetCastDelay(Target), token);
                 }
 
                 // ForceStaff
-                if (Combo.ForceStaff != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.ForceStaff.Item.Name == Order.Key
-                    && Combo.ForceStaff.CanBeCasted)
+                if (Main.ForceStaff != null
+                    && Main.ForceStaff.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.ForceStaff.CanBeCasted)
                 {
-                    Combo.ForceStaff.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.ForceStaff.GetCastDelay(Combo.Target), token);
+                    Main.ForceStaff.UseAbility(Target);
+                    await Await.Delay(Main.ForceStaff.GetCastDelay(Target), token);
                 }
 
                 // Orchid
-                if (Combo.Orchid != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.Orchid.Item.Name == Order.Key
-                    && Combo.Orchid.CanBeCasted)
+                if (Main.Orchid != null
+                    && Main.Orchid.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Orchid.CanBeCasted)
                 {
-                    Combo.Orchid.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.Orchid.GetCastDelay(Combo.Target), token);
+                    Main.Orchid.UseAbility(Target);
+                    await Await.Delay(Main.Orchid.GetCastDelay(Target), token);
                 }
 
                 // Bloodthorn
-                if (Combo.Bloodthorn != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.Bloodthorn.Item.Name == Order.Key
-                    && Combo.Bloodthorn.CanBeCasted)
+                if (Main.Bloodthorn != null
+                    && Main.Bloodthorn.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Bloodthorn.CanBeCasted)
                 {
-                    Combo.Bloodthorn.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.Bloodthorn.GetCastDelay(Combo.Target), token);
+                    Main.Bloodthorn.UseAbility(Target);
+                    await Await.Delay(Main.Bloodthorn.GetCastDelay(Target), token);
                 }
 
                 // RodofAtos
-                if (Combo.RodofAtos != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.RodofAtos.Item.Name == Order.Key
-                    && Combo.RodofAtos.CanBeCasted)
+                if (Main.RodofAtos != null
+                    && Main.RodofAtos.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.RodofAtos.CanBeCasted)
                 {
-                    Combo.RodofAtos.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.RodofAtos.GetCastDelay(Combo.Target), token);
+                    Main.RodofAtos.UseAbility(Target);
+                    await Await.Delay(Main.RodofAtos.GetCastDelay(Target), token);
                 }
 
-                // AncientSeal
-                if (Combo.AncientSeal != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.AncientSeal.Ability.Name == Order.Key
-                    && Combo.AncientSeal.CanBeCasted)
+                // ArcaneBolt
+                if (Main.ArcaneBolt != null
+                    && Main.ArcaneBolt.Ability.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.ArcaneBolt.CanBeCasted)
                 {
-                    Combo.AncientSeal.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.AncientSeal.GetCastDelay(Combo.Target), token);
+                    Main.ArcaneBolt.UseAbility(Target);
+                    await Await.Delay(Main.ArcaneBolt.GetCastDelay(Target), token);
                 }
 
                 // Hex
-                if (Combo.Hex != null
-                    && Combo.Target.IsLinkensProtected()
-                    && Combo.Hex.Item.Name == Order.Key
-                    && Combo.Hex.CanBeCasted)
+                if (Main.Hex != null
+                    && Main.Hex.Item.Name == Order.Key
+                    && (Target.IsLinkensProtected() || AntimageShield(Target))
+                    && Main.Hex.CanBeCasted)
                 {
-                    Combo.Hex.UseAbility(Combo.Target);
-                    await Await.Delay(Combo.Hex.GetCastDelay(Combo.Target), token);
+                    Main.Hex.UseAbility(Target);
+                    await Await.Delay(Main.Hex.GetCastDelay(Target), token);
                 }
             }
+        }
+
+        public bool AntimageShield(Hero Target)
+        {
+            var Shield = Target.GetAbilityById(AbilityId.antimage_spell_shield);
+
+            return Shield != null
+                && Shield.Cooldown == 0
+                && Shield.Level > 0
+                && Target.GetItemById(AbilityId.item_ultimate_scepter) != null;
         }
     }
 }

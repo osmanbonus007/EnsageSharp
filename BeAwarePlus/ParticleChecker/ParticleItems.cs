@@ -147,10 +147,9 @@ namespace BeAwarePlus.ParticleChecker
                         ToTitleCase(AbilityTexturName.Substring("item_".Length).Replace("_", " "))
                         : Hero.GetDisplayName();
 
-                    var Vector3 = Colors.Vector3ToID[Hero.Player.Id] * 255;
-                    var HeroColor = HeroNull
-                        ? Color.Red
-                        : Color.FromArgb((int)Vector3.X, (int)Vector3.Y, (int)Vector3.Z);
+                    var Vector3 = HeroNull ? new Vector3(255, 0, 0) : Colors.Vector3ToID[Hero.Player.Id] * 255;
+
+                    var HeroColor = Color.FromArgb((int)Vector3.X, (int)Vector3.Y, (int)Vector3.Z);
 
                     if (MenuManager.DangerousItemsMSG.Value
                         && DangerousItems)

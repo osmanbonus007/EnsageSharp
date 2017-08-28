@@ -497,7 +497,6 @@ namespace BeAwarePlus
                                 AbilityTexturName,
                                 args.ParticleEffect.GetControlPoint(0));
                         }
-
                     },
                     20);
             }
