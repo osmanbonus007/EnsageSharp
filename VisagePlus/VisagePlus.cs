@@ -14,7 +14,7 @@ namespace VisagePlus
         name: "VisagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.0",
+        version: "1.0.0.1",
         units: HeroId.npc_dota_hero_visage)]
     internal class VisagePlus : Plugin
     {
@@ -40,6 +40,14 @@ namespace VisagePlus
             get
             {
                 return Dagon1 ?? Dagon2 ?? Dagon3 ?? Dagon4 ?? (Dagon)Dagon5;
+            }
+        }
+
+        public Necronomicon Necronomicon
+        {
+            get
+            {
+                return Necronomicon1 ?? Necronomicon2 ?? (Necronomicon)Necronomicon3;
             }
         }
 
@@ -77,6 +85,15 @@ namespace VisagePlus
         public item_dagon_5 Dagon5 { get; set; }
 
         [ItemBinding]
+        public item_necronomicon Necronomicon1 { get; set; }
+
+        [ItemBinding]
+        public item_necronomicon_2 Necronomicon2 { get; set; }
+
+        [ItemBinding]
+        public item_necronomicon_3 Necronomicon3 { get; set; }
+
+        [ItemBinding]
         public item_force_staff ForceStaff { get; set; }
 
         [ItemBinding]
@@ -87,6 +104,9 @@ namespace VisagePlus
 
         [ItemBinding]
         public item_solar_crest SolarCrest { get; set; }
+
+        [ItemBinding]
+        public item_armlet Armlet { get; set; }
 
         protected override void OnActivate()
         {

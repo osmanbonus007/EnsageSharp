@@ -25,8 +25,8 @@ namespace VisagePlus.Features
             {
                 UpdateManager.Subscribe(Follow, 200);
 
-                config.FamiliarsLastHitItem.Item.SetValue(new KeyBind(
-                    Config.FamiliarsLastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+                config.LastHitItem.Item.SetValue(new KeyBind(
+                    Config.LastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
             }
         }
 
@@ -43,8 +43,8 @@ namespace VisagePlus.Features
             {
                 UpdateManager.Subscribe(Follow, 200);
 
-                Config.FamiliarsLastHitItem.Item.SetValue(new KeyBind(
-                    Config.FamiliarsLastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+                Config.LastHitItem.Item.SetValue(new KeyBind(
+                    Config.LastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
             }
             else
             {

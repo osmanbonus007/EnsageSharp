@@ -39,7 +39,9 @@ namespace VisagePlus.Features
                     x.IsAlive &&
                     x.IsControllable &&
                     x.Team == Context.Owner.Team &&
-                    x.Name.Contains("npc_dota_visage_familiar")).ToArray();
+                    (x.Name.Contains("npc_dota_visage_familiar") ||
+                    x.Name.Contains("npc_dota_necronomicon_warrior") ||
+                    x.Name.Contains("npc_dota_necronomicon_archer"))).ToArray();
 
             foreach (var Familiar in Familiars)
             {
@@ -48,9 +50,11 @@ namespace VisagePlus.Features
                     var StunDebuff = Target.Modifiers.FirstOrDefault(x => x.IsStunDebuff);
                     var HexDebuff = Target.Modifiers.FirstOrDefault(x => x.IsDebuff && x.Name == "modifier_sheepstick_debuff");
                     var FamiliarsStoneForm = Familiar.GetAbilityById(AbilityId.visage_summon_familiars_stone_form);
+                    var ManaBurn = Familiar.GetAbilityById(AbilityId.necronomicon_archer_mana_burn);
 
                     // FamiliarsStoneForm
-                    if (Config.AbilityToggler.Value.IsEnabled(FamiliarsStoneForm.Name)
+                    if (FamiliarsStoneForm != null &&
+                        Config.AbilityToggler.Value.IsEnabled(FamiliarsStoneForm.Name)
                         && AbilityExtensions.CanBeCasted(FamiliarsStoneForm)
                         && Familiar.Distance2D(Target) <= 100
                         && (StunDebuff == null || StunDebuff.RemainingTime <= 0.5)
@@ -61,11 +65,18 @@ namespace VisagePlus.Features
                         FamiliarsSleeper.Sleep(FamiliarsStoneForm.GetAbilitySpecialData("stun_duration") * 1000 - 200);
                     }
 
+                    // Necronomicon Mana Burn
+                    if (ManaBurn != null
+                        && AbilityExtensions.CanBeCasted(ManaBurn))
+                    {
+                        ManaBurn.UseAbility(Target);
+                    }
+
                     if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
                     {
                         if (Utils.SleepCheck($"IsAttack{Familiar.Handle}"))
                         {
-                            Familiar.Move(Game.MousePosition);
+                            Familiar.Move(Target.Position);
                             Utils.Sleep(200, $"IsAttack{Familiar.Handle}");
                         }
                     }

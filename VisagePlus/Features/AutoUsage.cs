@@ -9,7 +9,6 @@ using Ensage.SDK.Extensions;
 using Ensage.SDK.Handlers;
 using Ensage.SDK.Helpers;
 using Ensage.SDK.Service;
-using SharpDX;
 
 namespace VisagePlus.Features
 {

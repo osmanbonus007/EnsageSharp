@@ -27,9 +27,13 @@ namespace VisagePlus
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
+        public MenuItem<Slider> MinDisInOrbwalk { get; }
+
         public MenuItem<KeyBind> FollowKeyItem { get; }
 
-        public MenuItem<KeyBind> FamiliarsLastHitItem { get; }
+        public MenuItem<KeyBind> LastHitItem { get; }
+
+        public MenuItem<bool> CommonAttackItem { get; }
 
         public MenuItem<bool> KillStealItem { get; }
 
@@ -86,7 +90,8 @@ namespace VisagePlus
             var ItemsMenu = Factory.Menu("Items");
             ItemsToggler = ItemsMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
-                { "item_ghost", true },
+                { "item_armlet", true },
+                { "item_necronomicon_3", true },
                 { "item_shivas_guard", true },
                 { "item_dagon_5", true },
                 { "item_veil_of_discord", true },
@@ -147,16 +152,20 @@ namespace VisagePlus
                 { "visage_soul_assumption", true}
             }));
 
-            AutoSoulAssumptionItem = AutoUsageMenu.Item("Auto Soul Assumption", false);
+            AutoSoulAssumptionItem = AutoUsageMenu.Item("Auto Soul Assumption", true);
+
+            var FamiliarsLastHitMenu = Factory.Menu("Familiars Last Hit");
+            LastHitItem = FamiliarsLastHitMenu.Item("LastHit Key", new KeyBind('W', KeyBindType.Toggle, false));
+            CommonAttackItem = FamiliarsLastHitMenu.Item("Common Attack", true);
 
             var DrawingMenu = Factory.Menu("Drawing");
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);
             ComboRadiusItem.Item.SetTooltip("I suggest making a combo in this radius");
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
+            MinDisInOrbwalk = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
             FollowKeyItem = Factory.Item("Follow Key", new KeyBind('E', KeyBindType.Toggle, false));
-            FamiliarsLastHitItem = Factory.Item("Familiars LastHit Key", new KeyBind('Y', KeyBindType.Toggle, false));
-            
+
             FamiliarsLowHPItem = Factory.Item("Familiars Low HP %", new Slider(30, 0, 80));
             BladeMailItem = Factory.Item("Blade Mail Cancel", false);
             BladeMailItem.Item.SetTooltip("Cancel Combo if there is enemy Blade Mail");

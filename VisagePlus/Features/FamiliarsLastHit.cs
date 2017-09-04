@@ -21,9 +21,9 @@ namespace VisagePlus.Features
             Config = config;
             Context = config.VisagePlus.Context;
 
-            config.FamiliarsLastHitItem.PropertyChanged += FamiliarsLastHitChanged;
+            config.LastHitItem.PropertyChanged += FamiliarsLastHitChanged;
 
-            if (Config.FamiliarsLastHitItem.Value)
+            if (Config.LastHitItem.Value)
             {
                 UpdateManager.Subscribe(LastHitFollow, 50);
 
@@ -34,14 +34,14 @@ namespace VisagePlus.Features
 
         public void Dispose()
         {
-            Config.FamiliarsLastHitItem.PropertyChanged -= FamiliarsLastHitChanged;
+            Config.LastHitItem.PropertyChanged -= FamiliarsLastHitChanged;
 
             UpdateManager.Unsubscribe(LastHitFollow);
         }
 
         private void FamiliarsLastHitChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Config.FamiliarsLastHitItem.Value)
+            if (Config.LastHitItem.Value)
             {
                 UpdateManager.Subscribe(LastHitFollow, 50);
 
@@ -65,6 +65,11 @@ namespace VisagePlus.Features
                     x.Team == Context.Owner.Team &&
                     x.Name.Contains("npc_dota_visage_familiar")).ToArray();
 
+            var AttackingMe =
+                ObjectManager.TrackingProjectiles.FirstOrDefault(
+                    x =>
+                    x.Target.Name.Contains("npc_dota_visage_familiar"));
+
             foreach (var Familiar in Familiars)
             {
                 var EnemyHero =
@@ -73,7 +78,7 @@ namespace VisagePlus.Features
                         x.IsAlive &&
                         x.IsVisible &&
                         x.Team != Context.Owner.Team &&
-                        x.Distance2D(Familiar) <= x.AttackRange + 500);
+                        x.Distance2D(Familiar) <= x.AttackRange + 400);
 
                 var ClosestAllyTower =
                     EntityManager<Unit>.Entities.OrderBy(x => x.Distance2D(Familiar)).FirstOrDefault(
@@ -83,21 +88,21 @@ namespace VisagePlus.Features
                         x.Team == Context.Owner.Team &&
                         x.Distance2D(Familiar) >= 100);
 
-                if (EnemyHero != null)
+                if (EnemyHero != null || (AttackingMe != null && AttackingMe.Target.Handle == Familiar.Handle))
                 {
                     if (ClosestAllyTower == null)
                     {
-                        if (Utils.SleepCheck($"Fountain{Familiar.Handle}"))
+                        if (Utils.SleepCheck($"Fort{Familiar.Handle}"))
                         {
                             var ClosestAllyFountain =
                                 EntityManager<Unit>.Entities.FirstOrDefault(
                                     x =>
-                                    x.ClassId == ClassId.CDOTA_Unit_Fountain &&
+                                    x.ClassId == ClassId.CDOTA_BaseNPC_Fort &&
                                     x.IsAlive &&
                                     x.Team == Context.Owner.Team);
 
                             Familiar.Follow(ClosestAllyFountain);
-                            Utils.Sleep(200, $"Fountain{Familiar.Handle}");
+                            Utils.Sleep(200, $"Fort{Familiar.Handle}");
                         }
                     }
                     else
@@ -141,50 +146,57 @@ namespace VisagePlus.Features
                     {
                         if (ClosestAllyTower == null)
                         {
-                            if (Utils.SleepCheck($"Fountain{Familiar.Handle}"))
+                            if (Utils.SleepCheck($"Fort2{Familiar.Handle}"))
                             {
-                                var ClosestAllyFountain =
+                                var ClosestAllyFort =
                                     EntityManager<Unit>.Entities.FirstOrDefault(
                                         x =>
-                                        x.ClassId == ClassId.CDOTA_Unit_Fountain &&
+                                        x.ClassId == ClassId.CDOTA_BaseNPC_Fort &&
                                         x.IsAlive &&
                                         x.Team == Context.Owner.Team);
 
-                                Familiar.Follow(ClosestAllyFountain);
-                                Utils.Sleep(200, $"Fountain{Familiar.Handle}");
+                                Familiar.Follow(ClosestAllyFort);
+                                Utils.Sleep(500, $"Fort2{Familiar.Handle}");
                             }
                         }
                         else
                         {
-                            if (Utils.SleepCheck($"Tower{Familiar.Handle}"))
+                            if (Utils.SleepCheck($"Tower2{Familiar.Handle}"))
                             {
                                 Familiar.Follow(ClosestAllyTower);
-                                Utils.Sleep(200, $"Tower{Familiar.Handle}");
+                                Utils.Sleep(500, $"Tower2{Familiar.Handle}");
                             }
                         }
                     }
                     else if (ClosestAllyCreep != null && ClosestEnemyUnit == null)
                     {
-                        Familiar.Follow(ClosestAllyCreep);
+                        if (Utils.SleepCheck($"AllyCreep{Familiar.Handle}"))
+                        {
+                            Familiar.Follow(ClosestAllyCreep);
+                            Utils.Sleep(500, $"AllyCreep{Familiar.Handle}");
+                        }
                     }
                     else if (ClosestAllyCreep != null && ClosestEnemyUnit != null)
                     {
-                        if (ClosestEnemyUnit.Health >= Familiar.GetAttackDamage(ClosestEnemyUnit))
+                        var CommonAttack = Config.CommonAttackItem.Value ? Familiars.Count() : 1;
+                        if (ClosestEnemyUnit.Health <= CommonAttack * Familiar.GetAttackDamage(ClosestEnemyUnit))
                         {
-                            Familiar.Follow(ClosestEnemyUnit);
+                            if (Utils.SleepCheck($"Attack{Familiar.Handle}"))
+                            {
+                                Familiar.Attack(ClosestEnemyUnit);
+                                Utils.Sleep(100, $"Attack{Familiar.Handle}");
+                            }
                         }
-
-                        LastHit(Familiar, ClosestEnemyUnit);
+                        else
+                        {
+                            if (Utils.SleepCheck($"Follow{Familiar.Handle}"))
+                            {
+                                Familiar.Follow(ClosestEnemyUnit);
+                                Utils.Sleep(200, $"Follow{Familiar.Handle}");
+                            }
+                        }
                     }
                 }
-            }
-        }
-
-        private void LastHit(Unit Familiar, Unit ClosestEnemyCreep)
-        {
-            if (ClosestEnemyCreep.Health <= Familiar.GetAttackDamage(ClosestEnemyCreep))
-            {
-                Familiar.Attack(ClosestEnemyCreep);
             }
         }
     }

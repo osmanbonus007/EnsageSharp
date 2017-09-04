@@ -7,11 +7,12 @@ using Ensage;
 using Ensage.Common.Threading;
 using Ensage.SDK.Extensions;
 using Ensage.SDK.Orbwalker.Modes;
-using Ensage.SDK.Prediction;
 using Ensage.SDK.Service;
 using Ensage.SDK.TargetSelector;
 
 using Ensage.Common.Menu;
+using SharpDX;
+using System;
 
 namespace VisagePlus
 {
@@ -66,8 +67,8 @@ namespace VisagePlus
 
             Config.FollowKeyItem.Item.SetValue(new KeyBind(
                 Config.FollowKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
-            Config.FamiliarsLastHitItem.Item.SetValue(new KeyBind(
-                Config.FamiliarsLastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+            Config.LastHitItem.Item.SetValue(new KeyBind(
+                Config.LastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
 
             Config.FamiliarsCombo.Familiars(Target);
 
@@ -196,6 +197,26 @@ namespace VisagePlus
                         Main.Dagon.UseAbility(Target);
                         await Await.Delay(Main.Dagon.GetCastDelay(Target), token);
                     }
+
+                    // Necronomicon
+                    if (Main.Necronomicon != null
+                        && Config.ItemsToggler.Value.IsEnabled("item_necronomicon_3")
+                        && Main.Necronomicon.CanBeCasted
+                        && Owner.Distance2D(Target) <= Owner.AttackRange)
+                    {
+                        Main.Necronomicon.UseAbility();
+                        await Await.Delay(Main.Necronomicon.GetCastDelay(), token);
+                    }
+
+                    // Armlet
+                    if (Main.Armlet != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Armlet.Item.Name)
+                        && !Main.Armlet.Enabled
+                        && Owner.Distance2D(Target) <= Owner.AttackRange)
+                    {
+                        Main.Armlet.UseAbility();
+                        await Await.Delay(Main.Armlet.GetCastDelay(), token);
+                    }
                 }
                 else
                 {
@@ -204,15 +225,27 @@ namespace VisagePlus
                 
                 if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
                 {
+                    Orbwalker.Settings.Move.Item.SetValue(true);
                     Orbwalker.Move(Game.MousePosition);
                 }
                 else if (Target != null)
                 {
-                    Orbwalker.OrbwalkTo(Target);
+                    if (Owner.Distance2D(Target) <= Config.MinDisInOrbwalk.Value
+                        && Target.Distance2D(Game.MousePosition) <= Config.MinDisInOrbwalk.Value)
+                    {
+                        Orbwalker.Settings.Move.Item.SetValue(false);
+                        Orbwalker.OrbwalkTo(Target);
+                    }
+                    else
+                    {
+                        Orbwalker.Settings.Move.Item.SetValue(true);
+                        Orbwalker.OrbwalkTo(Target);
+                    }
                 }
             }
             else
             {
+                Orbwalker.Settings.Move.Item.SetValue(true);
                 Orbwalker.Move(Game.MousePosition);
             }
         }

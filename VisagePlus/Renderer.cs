@@ -41,18 +41,21 @@ namespace VisagePlus
                 0.60f,
                 (Config.ComboKeyItem.Value ? Color.Aqua : Color.Yellow));
 
-            Text($"Last Hit {(Config.FamiliarsLastHitItem.Value ? "ON" : "OFF")}", 
+            Text($"Last Hit {(Config.LastHitItem.Value ? "ON" : "OFF")}", 
                 0.65f, 
-                (Config.FamiliarsLastHitItem.Value ? Color.Aqua : Color.Yellow));
+                (Config.LastHitItem.Value ? Color.Aqua : Color.Yellow));
 
             Text($"Follow {(Config.FollowKeyItem.Value ? "ON" : "OFF")}",
                 0.70f,
                 (Config.FollowKeyItem.Value ? Color.Aqua : Color.Yellow));
 
-            Text($"Kill Steal {(!Config.Mode.CanExecute ? "ON" : "OFF")}",
+            if (Config.KillStealItem.Value)
+            {
+                Text($"Kill Steal {(!Config.Mode.CanExecute ? "ON" : "OFF")}",
                 0.75f,
                 (!Config.Mode.CanExecute ? Color.Aqua : Color.Yellow));
-
+            }
+            
             var EnemyHeroes =
                 EntityManager<Hero>.Entities.Where(
                     x =>
