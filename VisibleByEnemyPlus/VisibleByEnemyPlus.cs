@@ -16,7 +16,7 @@ using SharpDX;
 
 namespace VisibleByEnemyPlus
 {
-    [ExportPlugin("VisibleByEnemyPlus", StartupMode.Auto, "YEEEEEEE", "3.0.0.3")]
+    [ExportPlugin("VisibleByEnemyPlus", StartupMode.Auto, "YEEEEEEE", "3.0.0.4")]
     public class VisibleByEnemyPlus : Plugin
     {
         private Unit Owner { get; }
