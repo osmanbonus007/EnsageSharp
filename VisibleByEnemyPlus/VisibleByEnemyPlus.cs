@@ -262,7 +262,7 @@ namespace VisibleByEnemyPlus
                     $"unit_{unit.Handle}",
                     Config.Effects[Config.EffectTypeItem.Value.SelectedIndex],
                     ParticleAttachment.AbsOriginFollow,
-                    true,
+                    RestartType.NormalRestart,
                     1,
                     new Vector3(Red, Green, Blue),
                     2,
