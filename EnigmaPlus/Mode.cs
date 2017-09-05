@@ -18,6 +18,7 @@ using Ensage.SDK.Service;
 using Ensage.SDK.TargetSelector;
 
 using SharpDX;
+using Ensage.SDK.Renderer.Particle;
 
 namespace EnigmaPlus
 {
@@ -279,7 +280,7 @@ namespace EnigmaPlus
                     "Text",
                     "materials/ensage_ui/particles/text.vpcf",
                     ParticleAttachment.AbsOrigin,
-                    false,
+                    RestartType.None,
                     0,
                     Owner.Position - new Vector3(0, 200, 0),
                     1,
@@ -301,7 +302,6 @@ namespace EnigmaPlus
                     11,
                     new Vector3(255, 0, 0));
             }
-                
 
             var Targets =
                 EntityManager<Hero>.Entities.OrderBy(x => x == OffTarget).Where(
@@ -335,7 +335,7 @@ namespace EnigmaPlus
                     "BlackHoleRadius",
                     "particles/ui_mouseactions/drag_selected_ring.vpcf",
                     ParticleAttachment.AbsOrigin,
-                    false,
+                    RestartType.None,
                     0,
                     Output.CastPosition,
                     1,
