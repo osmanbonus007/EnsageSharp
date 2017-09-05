@@ -46,7 +46,7 @@
   <ItemGroup>
     <Compile Include="VisibleByEnemyPlus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VisibleByEnemyPlusConfig.cs" />
+    <Compile Include="Config.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

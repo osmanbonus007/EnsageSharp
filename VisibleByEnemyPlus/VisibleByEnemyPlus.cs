@@ -11,26 +11,23 @@ using Ensage.SDK.Renderer.Particle;
 using Ensage.SDK.Service;
 using Ensage.SDK.Service.Metadata;
 using Ensage.SDK.Renderer;
-using Ensage.SDK.Extensions;
 
 using SharpDX;
 
 namespace VisibleByEnemyPlus
 {
-    [ExportPlugin("VisibleByEnemyPlus", StartupMode.Auto, "YEEEEEEE", "3.0.0.2")]
+    [ExportPlugin("VisibleByEnemyPlus", StartupMode.Auto, "YEEEEEEE", "3.0.0.3")]
     public class VisibleByEnemyPlus : Plugin
     {
-        private Unit Unit { get; }
+        private Unit Owner { get; }
 
         private Lazy<IParticleManager> ParticleManager { get; }
 
         private Lazy<IRendererManager> RendererManager { get; }
 
-        private VisibleByEnemyPlusConfig Config { get; set; }
+        private Config Config { get; set; }
 
         private List<Vector3> PosShrine { get; } = new List<Vector3>();
-
-        private List<Vector3> PosNeutral { get; } = new List<Vector3>();
 
         private bool AddEffectType { get; set; }
 
@@ -52,16 +49,16 @@ namespace VisibleByEnemyPlus
             [Import] Lazy<IParticleManager> particlemanager,
             [Import] Lazy<IRendererManager> renderermanager)
         {
-            Unit = context.Owner;
+            Owner = context.Owner;
             ParticleManager = particlemanager;
             RendererManager = renderermanager;
         }
 
         protected override void OnActivate()
         {
-            Config = new VisibleByEnemyPlusConfig();
+            Config = new Config();
 
-            Config.DrawMinimapItem.PropertyChanged += DrawMinimapChanged;
+            Config.ShrinesDrawItem.PropertyChanged += ShrinesDrawItemChanged;
             Config.EffectTypeItem.PropertyChanged += ItemChanged;
 
             Config.RedItem.PropertyChanged += ItemChanged;
@@ -82,7 +79,7 @@ namespace VisibleByEnemyPlus
 
             UpdateManager.Subscribe(LoopEntities, 250);
 
-            if (Config.DrawMinimapItem)
+            if (Config.ShrinesDrawItem.Value)
             {
                 RendererManager.Value.Draw += OnDraw;
             }
@@ -90,14 +87,14 @@ namespace VisibleByEnemyPlus
 
         protected override void OnDeactivate()
         {
-            if (Config.DrawMinimapItem)
+            if (Config.ShrinesDrawItem.Value)
             {
                 RendererManager.Value.Draw -= OnDraw;
             }
 
             UpdateManager.Unsubscribe(LoopEntities);
 
-            Config.DrawMinimapItem.PropertyChanged -= DrawMinimapChanged;
+            Config.ShrinesDrawItem.PropertyChanged -= ShrinesDrawItemChanged;
             Config.EffectTypeItem.PropertyChanged -= ItemChanged;
 
             Config.RedItem.PropertyChanged -= ItemChanged;
@@ -106,11 +103,12 @@ namespace VisibleByEnemyPlus
             Config.AlphaItem.PropertyChanged -= ItemChanged;
 
             Config?.Dispose();
+            ParticleManager.Value.Dispose();
         }
 
-        private void DrawMinimapChanged(object sender, PropertyChangedEventArgs e)
+        private void ShrinesDrawItemChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Config.DrawMinimapItem)
+            if (Config.ShrinesDrawItem.Value)
             {
                 RendererManager.Value.Draw += OnDraw;
             }
@@ -137,9 +135,9 @@ namespace VisibleByEnemyPlus
                 Config.AlphaItem.Item.SetFontColor(new Color(185, 176, 163, Alpha));
             }
 
-            Unit.Stop();
+            Owner.Stop();
 
-            HandleEffect(Unit, true);
+            HandleEffect(Owner, true);
             AddEffectType = false;
         }
 
@@ -188,7 +186,7 @@ namespace VisibleByEnemyPlus
         {
             if (Config.AlliedHeroesItem)
             {
-                foreach (var hero in EntityManager<Hero>.Entities.Where(x => x.Team == Unit.Team))
+                foreach (var hero in EntityManager<Hero>.Entities.Where(x => x.Team == Owner.Team))
                 {
                     HandleEffect(hero, hero.IsVisibleToEnemies);
                 }
@@ -196,7 +194,7 @@ namespace VisibleByEnemyPlus
 
             if (Config.BuildingsItem)
             {
-                foreach (var building in EntityManager<Building>.Entities.Where(x => x.Team == Unit.Team))
+                foreach (var building in EntityManager<Building>.Entities.Where(x => x.Team == Owner.Team))
                 {
                     HandleEffect(building, building.IsVisibleToEnemies);
                 }
@@ -210,7 +208,7 @@ namespace VisibleByEnemyPlus
                 }
             }
 
-            var Units = EntityManager<Unit>.Entities.Where(x => x.Team == Unit.Team).ToList();
+            var Units = EntityManager<Unit>.Entities.Where(x => x.Team == Owner.Team).ToList();
 
             if (Config.WardsItem )
             {
@@ -247,7 +245,7 @@ namespace VisibleByEnemyPlus
 
         private void HandleEffect(Unit unit, bool visible)
         {
-            if (!AddEffectType && Unit.Animation.Name != "idle")
+            if (!AddEffectType && Owner.Animation.Name != "idle")
             {
                 AddEffectType = true;
             }
@@ -283,19 +281,6 @@ namespace VisibleByEnemyPlus
                 ParticleManager.Value.Remove($"unit_{unit.Handle}");
                 PosShrine.Remove(unit.Position);
             }
-
-            if (visible && unit.IsVisible && unit.IsAlive && IsNeutral(unit) && unit.IsSpawned)
-            {
-                if (!PosNeutral.Any(x => x == unit.Position))
-                {
-                    PosNeutral.RemoveAll(x => x.Distance(unit.Position) < 500);
-                    PosNeutral.Add(unit.Position);
-                }
-            }
-            else if (AddEffectType)
-            {
-                PosNeutral.Remove(unit.Position);
-            }
         }
 
         private void OnDraw(object sender, EventArgs e)
@@ -305,29 +290,9 @@ namespace VisibleByEnemyPlus
                 RendererManager.Value.DrawText(
                     pos.WorldToMinimap() - ExtraPos,
                     "V",
-                    System.Drawing.Color.FromArgb(
-                        Config.DrawRedItem,
-                        Config.DrawGreenItem,
-                        Config.DrawBlueItem),
+                    System.Drawing.Color.Aqua,
                     ExtraSize,
                     "Arial Black");
-            }
-
-            if (Config.DrawNeutralsItem)
-            {
-                foreach (var pos in PosNeutral.ToList())
-                {
-                    RendererManager.Value.DrawText(
-                        pos.WorldToMinimap() - new Vector2(0, 5) - ExtraPos,
-                        "●",
-                        System.Drawing.Color.FromArgb(
-                            Config.DrawAlphaItem,
-                            Config.DrawRedItem,
-                            Config.DrawGreenItem,
-                            Config.DrawBlueItem),
-                        ExtraSize,
-                        "Arial Black");
-                }
             }
         }
     }

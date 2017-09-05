@@ -7,7 +7,7 @@ using Ensage.Common.Menu;
 
 namespace VisibleByEnemyPlus
 {
-    internal class VisibleByEnemyPlusConfig : IDisposable
+    internal class Config : IDisposable
     {
         public MenuFactory Factory { get; }
 
@@ -19,25 +19,13 @@ namespace VisibleByEnemyPlus
 
         public MenuItem<bool> ShrinesItem { get; }
 
-        public MenuItem<bool> DrawMinimapItem { get; }
-
-        public MenuItem<bool> DrawNeutralsItem { get; }
-
-        public MenuItem<Slider> DrawRedItem { get; set; }
-
-        public MenuItem<Slider> DrawGreenItem { get; }
-
-        public MenuItem<Slider> DrawBlueItem { get; }
-
-        public MenuItem<Slider> DrawAlphaItem { get; }
+        public MenuItem<bool> ShrinesDrawItem { get; }
 
         public MenuItem<bool> NeutralsItem { get; }
 
         public MenuItem<bool> UnitsItem { get; }
 
         public MenuItem<bool> BuildingsItem { get; }
-
-        private bool Disposed { get; set; }
 
         public MenuItem<StringList> EffectTypeItem { get; }
 
@@ -49,25 +37,12 @@ namespace VisibleByEnemyPlus
 
         public MenuItem<Slider> AlphaItem { get; }
 
-        public VisibleByEnemyPlusConfig()
+        private bool Disposed { get; set; }
+
+        public Config()
         {
             Factory = MenuFactory.CreateWithTexture("VisibleByEnemyPlus", "visiblebyenemyplus");
             Factory.Target.SetFontColor(Color.Aqua);
-
-            var DrawingMenu = Factory.Menu("Draw Settings");
-            DrawMinimapItem = DrawingMenu.Item("Draw On Minimap", true);
-            DrawNeutralsItem = DrawingMenu.Item("Draw Neutrals", true);
-
-            DrawRedItem = DrawingMenu.Item("Red", new Slider(0, 0, 255));
-            DrawRedItem.Item.SetFontColor(Color.Red);
-
-            DrawGreenItem = DrawingMenu.Item("Green", new Slider(255, 0, 255));
-            DrawGreenItem.Item.SetFontColor(Color.Green);
-
-            DrawBlueItem = DrawingMenu.Item("Blue", new Slider(255, 0, 255));
-            DrawBlueItem.Item.SetFontColor(Color.Blue);
-
-            DrawAlphaItem = DrawingMenu.Item("Alpha", new Slider(255, 0, 255));
 
             EffectTypeItem = Factory.Item("Effect Type", new StringList(EffectsName) { SelectedIndex = 0 });
 
@@ -95,6 +70,7 @@ namespace VisibleByEnemyPlus
             WardsItem = Factory.Item("Wards", true);
             MinesItem = Factory.Item("Mines", true);
             ShrinesItem = Factory.Item("Shrines", true);
+            ShrinesDrawItem = Factory.Item("Shrines Draw On Minimap", true);
             NeutralsItem = Factory.Item("Neutrals", true);
             UnitsItem = Factory.Item("Units", true);
             BuildingsItem = Factory.Item("Buildings", true);
