@@ -31,13 +31,13 @@ namespace VisibleByEnemyPlus
 
         private bool AddEffectType { get; set; }
 
-        private int Red => Config.RedItem.Value;
+        private int Red => Config.RedItem;
 
-        private int Green => Config.GreenItem.Value;
+        private int Green => Config.GreenItem;
 
-        private int Blue => Config.BlueItem.Value;
+        private int Blue => Config.BlueItem;
 
-        private int Alpha => Config.AlphaItem.Value;
+        private int Alpha => Config.AlphaItem;
 
         private Vector2 ExtraPos { get; set; }
 
@@ -79,7 +79,7 @@ namespace VisibleByEnemyPlus
 
             UpdateManager.Subscribe(LoopEntities, 250);
 
-            if (Config.ShrinesDrawItem.Value)
+            if (Config.ShrinesDrawItem)
             {
                 RendererManager.Value.Draw += OnDraw;
             }
@@ -87,7 +87,7 @@ namespace VisibleByEnemyPlus
 
         protected override void OnDeactivate()
         {
-            if (Config.ShrinesDrawItem.Value)
+            if (Config.ShrinesDrawItem)
             {
                 RendererManager.Value.Draw -= OnDraw;
             }
@@ -108,7 +108,7 @@ namespace VisibleByEnemyPlus
 
         private void ShrinesDrawItemChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Config.ShrinesDrawItem.Value)
+            if (Config.ShrinesDrawItem)
             {
                 RendererManager.Value.Draw += OnDraw;
             }

@@ -60,10 +60,10 @@ namespace VisibleByEnemyPlus
             }
             else
             {
-                RedItem.Item.SetFontColor(new Color(RedItem.Value, 0, 0, 255));
-                GreenItem.Item.SetFontColor(new Color(0, GreenItem.Value, 0, 255));
-                BlueItem.Item.SetFontColor(new Color(0, 0, BlueItem.Value, 255));
-                AlphaItem.Item.SetFontColor(new Color(185, 176, 163, AlphaItem.Value));
+                RedItem.Item.SetFontColor(new Color(RedItem, 0, 0, 255));
+                GreenItem.Item.SetFontColor(new Color(0, GreenItem, 0, 255));
+                BlueItem.Item.SetFontColor(new Color(0, 0, BlueItem, 255));
+                AlphaItem.Item.SetFontColor(new Color(185, 176, 163, AlphaItem));
             }
 
             AlliedHeroesItem = Factory.Item("Allied Heroes", true);
