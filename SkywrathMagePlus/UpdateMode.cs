@@ -5,6 +5,7 @@ using Ensage;
 using Ensage.SDK.Extensions;
 using Ensage.SDK.Helpers;
 using Ensage.SDK.Service;
+using Ensage.SDK.Renderer.Particle;
 
 using SharpDX;
 
