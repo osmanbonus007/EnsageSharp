@@ -50,16 +50,16 @@ namespace JungleScanPlus
                 ExtraPos = new Vector2(10, 20);
                 ExtraSize = 25;
             }
-
-            RendererManager.Value.Draw += OnDraw;
+            
             Entity.OnParticleEffectAdded += OnParticleEvent;
+            RendererManager.Value.Draw += OnDraw;
         }
 
         protected override void OnDeactivate()
         {
+            RendererManager.Value.Draw -= OnDraw;
             Entity.OnParticleEffectAdded -= OnParticleEvent;
-            RendererManager.Value.Draw += OnDraw;
-
+            
             Config?.Dispose();
         }
 
