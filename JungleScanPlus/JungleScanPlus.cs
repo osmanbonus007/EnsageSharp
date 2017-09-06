@@ -121,7 +121,7 @@ namespace JungleScanPlus
                 {
                     RendererManager.Value.DrawText(
                         Drawing.WorldToScreen(pos.GetPos),
-                        "Eneny",
+                        "Enemy",
                         Color.FromArgb(
                             Config.AlphaItem,
                             Config.RedItem, 
