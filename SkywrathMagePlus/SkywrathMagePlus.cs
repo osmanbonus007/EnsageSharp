@@ -1,13 +1,16 @@
 ﻿using System.ComponentModel.Composition;
+using System.Reflection;
 
 using Ensage;
 using Ensage.SDK.Abilities;
 using Ensage.SDK.Service;
 using Ensage.SDK.Service.Metadata;
-
 using Ensage.SDK.Abilities.npc_dota_hero_skywrath_mage;
 using Ensage.SDK.Abilities.Items;
 using Ensage.SDK.Inventory.Metadata;
+
+using PlaySharp.Toolkit.Logging;
+using log4net;
 
 namespace SkywrathMagePlus
 {
@@ -15,13 +18,15 @@ namespace SkywrathMagePlus
         name: "SkywrathMagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.1.0.0",
+        version: "1.2.0.0",
         units: HeroId.npc_dota_hero_skywrath_mage)]
     internal class SkywrathMagePlus : Plugin
     {
         private Config Config { get; set; }
 
         public IServiceContext Context { get; }
+
+        public ILog Log = AssemblyLogs.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [ImportingConstructor]
         public SkywrathMagePlus([Import] IServiceContext context)
@@ -86,9 +91,6 @@ namespace SkywrathMagePlus
 
         [ItemBinding]
         public item_cyclone Eul { get; set; }
-
-        [ItemBinding]
-        public item_medallion_of_courage Medallion { get; set; }
 
         protected override void OnActivate()
         {

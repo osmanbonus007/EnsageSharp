@@ -19,9 +19,15 @@ namespace SkywrathMagePlus
 
         public MenuItem<AbilityToggler> ItemsToggler { get; }
 
+        public MenuItem<bool> AutoComboItem { get; }
+
         public MenuItem<AbilityToggler> AutoAbilitiesToggler { get; }
 
         public MenuItem<AbilityToggler> AutoItemsToggler { get; }
+
+        public MenuItem<bool> AutoDisableItem { get; }
+
+        public MenuItem<AbilityToggler> AutoDisableToggler { get; }
 
         public MenuItem<AbilityToggler> LinkenBreakerToggler { get; }
 
@@ -37,9 +43,13 @@ namespace SkywrathMagePlus
 
         public MenuItem<bool> SpamUnitItem { get; }
 
+        public MenuItem<bool> WWithoutFailItem { get; }
+
         public MenuItem<bool> WTargetItem { get; }
 
         public MenuItem<Slider> WRadiusItem { get; }
+
+        public MenuItem<Slider> MinDisInOrbwalk { get; }
 
         public MenuItem<StringList> TargetItem { get; }
 
@@ -55,7 +65,7 @@ namespace SkywrathMagePlus
 
         public Mode Mode { get; }
 
-        public UpdateMode UpdateMode { get; }
+        public Data Data { get; }
 
         public LinkenBreaker LinkenBreaker { get; }
 
@@ -63,11 +73,17 @@ namespace SkywrathMagePlus
 
         private AutoAbility AutoAbility { get; }
 
+        private AutoDisable AutoDisable { get; }
+
+        private WithoutFail WithoutFail { get; }
+
+        public UpdateMode UpdateMode { get; }
+
         private bool Disposed { get; set; }
 
-        public Config(SkywrathMagePlus skywrathMagePlus)
+        public Config(SkywrathMagePlus skywrathmageplus)
         {
-            SkywrathMagePlus = skywrathMagePlus;
+            SkywrathMagePlus = skywrathmageplus;
 
             Factory = MenuFactory.CreateWithTexture("SkywrathMagePlus", "npc_dota_hero_skywrath_mage");
             Factory.Target.SetFontColor(Color.Aqua);
@@ -83,7 +99,6 @@ namespace SkywrathMagePlus
             var ItemsMenu = Factory.Menu("Items");
             ItemsToggler = ItemsMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
-                { "item_ghost", true },
                 { "item_shivas_guard", true },
                 { "item_dagon_5", true },
                 { "item_veil_of_discord", true },
@@ -95,6 +110,7 @@ namespace SkywrathMagePlus
             }));
 
             var AutoComboMenu = Factory.Menu("Auto Combo");
+            AutoComboItem = AutoComboMenu.Item("Use Auto Combo", true);
             AutoAbilitiesToggler = AutoComboMenu.Item("Abilities: ", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "skywrath_mage_mystic_flare", true },
@@ -105,7 +121,6 @@ namespace SkywrathMagePlus
 
             AutoItemsToggler = AutoComboMenu.Item("Items: ", new AbilityToggler(new Dictionary<string, bool>
             {
-                { "item_ghost", true },
                 { "item_shivas_guard", true },
                 { "item_dagon_5", true },
                 { "item_veil_of_discord", true },
@@ -116,48 +131,58 @@ namespace SkywrathMagePlus
                 { "item_sheepstick", true }
             }));
 
+            var AutoDisableMenu = Factory.MenuWithTexture("Auto Disable", "item_sheepstick");
+            AutoDisableItem = AutoDisableMenu.Item("Use Auto Disable", true);
+            AutoDisableToggler = AutoDisableMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            {
+                { "skywrath_mage_ancient_seal", true },
+                { "item_bloodthorn", true },
+                { "item_orchid", true },
+                { "item_sheepstick", true }
+            }));
+
             var LinkenBreakerMenu = Factory.MenuWithTexture("Linken Breaker", "item_sphere");
             LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
+                { "skywrath_mage_ancient_seal", false },
                 { "skywrath_mage_arcane_bolt", true },
                 { "item_sheepstick", true},
                 { "item_rod_of_atos", true},
                 { "item_bloodthorn", true },
                 { "item_orchid", true },
                 { "item_cyclone", true },
-                { "item_force_staff", true },
-                { "item_medallion_of_courage", true },
+                { "item_force_staff", true }
             }));
 
             LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
             {
+                { "skywrath_mage_ancient_seal" },
                 { "skywrath_mage_arcane_bolt" },
                 { "item_sheepstick" },
                 { "item_rod_of_atos" },
                 { "item_bloodthorn" },
                 { "item_orchid" },
                 { "item_cyclone" },
-                { "item_force_staff" },
-                { "item_medallion_of_courage" },
+                { "item_force_staff" }
             }));
 
             var AntimageBreakerMenu = Factory.MenuWithTexture("Antimage Breaker", "antimage_spell_shield");
             AntimageBreakerToggler = AntimageBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
+                { "skywrath_mage_ancient_seal", false },
                 { "skywrath_mage_arcane_bolt", true },
                 { "item_rod_of_atos", true},
                 { "item_cyclone", true },
-                { "item_force_staff", true },
-                { "item_medallion_of_courage", true },
+                { "item_force_staff", true }
             }));
 
             AntimageBreakerChanger = AntimageBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
             {
+                { "skywrath_mage_ancient_seal" },
                 { "skywrath_mage_arcane_bolt" },
                 { "item_rod_of_atos" },
                 { "item_cyclone" },
-                { "item_force_staff" },
-                { "item_medallion_of_courage" },
+                { "item_force_staff" }
             }));
 
             var BladeMailMenu = Factory.MenuWithTexture("Blade Mail", "item_blade_mail");
@@ -165,6 +190,13 @@ namespace SkywrathMagePlus
             BladeMailItem.Item.SetTooltip("Cancel Combo if there is enemy Blade Mail");
             EulBladeMailItem = BladeMailMenu.Item("Use Eul", true);
             EulBladeMailItem.Item.SetTooltip("Use Eul if there is BladeMail with ULT");
+
+            var ConcussiveShotMenu = Factory.MenuWithTexture("Smart Concussive Shot", "skywrath_mage_concussive_shot");
+            WWithoutFailItem = ConcussiveShotMenu.Item("Without Fail", true);
+            WTargetItem = ConcussiveShotMenu.Item("Use Only Target", true);
+            WTargetItem.Item.SetTooltip("This only works with Combo");
+            WRadiusItem = ConcussiveShotMenu.Item("Use in Radius", new Slider(1400, 800, 1600));
+            WRadiusItem.Item.SetTooltip("This only works with Combo");
 
             var DrawingMenu = Factory.Menu("Drawing");
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);
@@ -175,8 +207,7 @@ namespace SkywrathMagePlus
             SpamKeyItem = Factory.Item("Q Spam Key", new KeyBind('Q'));
             SpamUnitItem = Factory.Item("Q Spam Units", true);
             SpamUnitItem.Item.SetTooltip("Creeps, Neutrals and Roshan");
-            WTargetItem = Factory.Item("Use W Only Target", true);
-            WRadiusItem = Factory.Item("Use W in Radius", new Slider(1200, 500, 1600));
+            MinDisInOrbwalk = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
 
             ComboKeyItem.Item.ValueChanged += HotkeyChanged;
@@ -186,10 +217,13 @@ namespace SkywrathMagePlus
             Mode = new Mode(SkywrathMagePlus.Context, Key, this);
             SkywrathMagePlus.Context.Orbwalker.RegisterMode(Mode);
 
+            Data = new Data();
             LinkenBreaker = new LinkenBreaker(this);
             SpamMode = new SpamMode(this, SkywrathMagePlus.Context);
-            AutoAbility = new AutoAbility(this, Mode, SkywrathMagePlus.Context);
+            AutoAbility = new AutoAbility(this, SkywrathMagePlus.Context);
+            AutoDisable = new AutoDisable(this);
             UpdateMode = new UpdateMode(this);
+            WithoutFail = new WithoutFail(this);
         }
 
         private void HotkeyChanged(object sender, OnValueChangeEventArgs e)
@@ -222,6 +256,8 @@ namespace SkywrathMagePlus
             {
                 Factory.Dispose();
                 UpdateMode.Dispose();
+                WithoutFail.Dispose();
+                AutoDisable.Dispose();
                 AutoAbility.Dispose();
                 SkywrathMagePlus.Context.Orbwalker.UnregisterMode(Mode);
                 Mode.Deactivate();

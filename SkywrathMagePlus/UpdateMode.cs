@@ -21,7 +21,7 @@ namespace SkywrathMagePlus
 
         public Hero WShow { get; set; }
 
-        private Unit OffTarget { get; set; }
+        private Hero OffTarget { get; set; }
 
         private bool WRadius { get; set; }
 
@@ -51,7 +51,7 @@ namespace SkywrathMagePlus
 
         private void OnUpdate()
         {
-            if (Config.EulBladeMailItem.Value)
+            if (Config.EulBladeMailItem)
             {
                 var Heros = EntityManager<Hero>.Entities.FirstOrDefault(
                     x => !x.IsIllusion &&
@@ -68,7 +68,7 @@ namespace SkywrathMagePlus
                 }
             }
 
-            if (Config.ComboRadiusItem.Value)
+            if (Config.ComboRadiusItem)
             {
                 Context.Particle.DrawRange(
                     Context.Owner,
@@ -93,7 +93,7 @@ namespace SkywrathMagePlus
                     ParticleAttachment.AbsOriginFollow,
                     RestartType.FullRestart,
                     1,
-                    new Vector3(Config.WRadiusItem.Value, 255, 0),
+                    new Vector3(Config.WRadiusItem, 255, 0),
                     2,
                     new Vector3(0, 255, 255));
             }
@@ -111,7 +111,7 @@ namespace SkywrathMagePlus
                 x.Team != Context.Owner.Team &&
                 x.Distance2D(Context.Owner) <= Main.ConcussiveShot.Radius - 25);
 
-            if (Config.WDrawItem.Value
+            if (Config.WDrawItem
                 && WShow != null
                 && Main.ConcussiveShot
                 && Main.ConcussiveShot.Ability.Cooldown <= 1)
@@ -134,18 +134,19 @@ namespace SkywrathMagePlus
                 Context.Particle.Remove("ConcussiveShot");
             }
 
-            if (Context.TargetSelector.IsActive)
+            if (Context.TargetSelector.IsActive 
+                || OffTarget == null || !OffTarget.IsValid || !OffTarget.IsAlive)
             {
-                OffTarget = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
+                OffTarget = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
             }
 
-            if ((Config.Mode.Target != null || OffTarget != null) && !Config.SpamKeyItem.Value)
+            if (OffTarget != null && !Config.SpamKeyItem)
             {
                 Context.Particle.DrawTargetLine(
                     Context.Owner,
                     "Target",
-                    Config.Mode.Target != null ? Config.Mode.Target.Position : OffTarget.Position,
-                    Config.Mode.Target != null ? Color.Red : Color.Aqua);
+                    OffTarget.Position,
+                    Config.Mode.CanExecute ? Color.Red : Color.Aqua);
             }
             else
             {

@@ -11,6 +11,7 @@ using Ensage.SDK.Service;
 using Ensage.SDK.Extensions;
 
 using SharpDX;
+using System;
 
 namespace SkywrathMagePlus
 {
@@ -44,7 +45,7 @@ namespace SkywrathMagePlus
 
         private void SpamKeyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Config.SpamKeyItem.Value)
+            if (Config.SpamKeyItem)
             {
                 Handler.RunAsync();
             }
@@ -68,78 +69,117 @@ namespace SkywrathMagePlus
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            if (Config.TargetItem.Value.SelectedValue.Contains("Lock")
-                && (Target == null || !Target.IsValid || !Target.IsAlive))
+            try
             {
-                if (!Context.TargetSelector.IsActive)
+                if (Target == null || !Target.IsValid || !Target.IsAlive)
                 {
-                    Context.TargetSelector.Activate();
-                }
-
-                if (Context.TargetSelector.IsActive)
-                {
-                    if (Config.SpamUnitItem.Value)
+                    if (!Context.TargetSelector.IsActive)
                     {
-                        Target = EntityManager<Unit>.Entities.OrderBy(
-                        order => order.Distance2D(Game.MousePosition)).FirstOrDefault(
-                        x => !x.IsIllusion &&
-                        x.IsAlive &&
-                        x.IsVisible &&
-                        x.IsValid &&
-                        (x.IsNeutral ||
-                        x.Name == "npc_dota_roshan" ||
-                        (x.Team != Context.Owner.Team &&
-                        x as Creep != null))
-                        && x.Distance2D(Game.MousePosition) <= 100);
+                        Context.TargetSelector.Activate();
                     }
-                    
-                    if (Target == null)
+
+                    if (Context.TargetSelector.IsActive)
                     {
-                        Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
+                        if (Config.SpamUnitItem)
+                        {
+                            Target = 
+                                EntityManager<Unit>.Entities.OrderBy(
+                                    order => order.Distance2D(Game.MousePosition)).FirstOrDefault(
+                                    x => !x.IsIllusion &&
+                                    x.IsAlive &&
+                                    x.IsVisible &&
+                                    x.IsValid &&
+                                    (x.IsNeutral ||
+                                    x.Name == "npc_dota_roshan" ||
+                                    (x.Team != Context.Owner.Team &&
+                                    x as Creep != null && x.IsSpawned))
+                                    && x.Distance2D(Game.MousePosition) <= 100);
+                        }
+
+                        if (Target == null)
+                        {
+                            Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
+                        }
+                    }
+
+                    if (Target != null)
+                    {
+                        if (Context.TargetSelector.IsActive)
+                        {
+                            Context.TargetSelector.Deactivate();
+                        }
                     }
                 }
 
                 if (Target != null)
                 {
-                    if (Context.TargetSelector.IsActive)
+                    Context.Particle.DrawTargetLine(
+                        Context.Owner,
+                        "SpamTarget",
+                        Target.Position,
+                        Color.Green);
+
+                    if (!Target.IsMagicImmune())
                     {
-                        Context.TargetSelector.Deactivate();
+                        // ArcaneBolt
+                        if (Main.ArcaneBolt != null
+                            && Main.ArcaneBolt.CanBeCasted
+                            && Main.ArcaneBolt.CanHit(Target))
+                        {
+                            Main.ArcaneBolt.UseAbility(Target);
+                            await Await.Delay(Main.ArcaneBolt.GetCastDelay(), token);
+                        }
+                    }
+                    if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
+                    {
+                        if (!Context.Orbwalker.Settings.Move)
+                        {
+                            Context.Orbwalker.Settings.Move.Item.SetValue(true);
+                        }
+
+                        Context.Orbwalker.Move(Game.MousePosition);
+                    }
+                    else if (Target != null)
+                    {
+                        if (Context.Owner.Distance2D(Target) <= Config.MinDisInOrbwalk
+                            && Target.Distance2D(Game.MousePosition) <= Config.MinDisInOrbwalk)
+                        {
+                            if (Context.Orbwalker.Settings.Move)
+                            {
+                                Context.Orbwalker.Settings.Move.Item.SetValue(false);
+                            }
+
+                            Context.Orbwalker.OrbwalkTo(Target);
+                        }
+                        else
+                        {
+                            if (!Context.Orbwalker.Settings.Move)
+                            {
+                                Context.Orbwalker.Settings.Move.Item.SetValue(true);
+                            }
+
+                            Context.Orbwalker.OrbwalkTo(Target);
+                        }
                     }
                 }
-            } 
-
-            if (Target != null)
-            {
-                Context.Particle.DrawTargetLine(
-                    Context.Owner,
-                    "SpamTarget",
-                    Target.Position,
-                    Color.Green);
-
-                if (!Target.IsMagicImmune())
+                else
                 {
-                    // ArcaneBolt
-                    if (Main.ArcaneBolt != null
-                        && Config.AbilityToggler.Value.IsEnabled(Main.ArcaneBolt.Ability.Name)
-                        && Main.ArcaneBolt.CanBeCasted)
+                    if (!Context.Orbwalker.Settings.Move)
                     {
-                        Main.ArcaneBolt.UseAbility(Target);
-                        await Await.Delay(Main.ArcaneBolt.GetCastDelay(), token);
+                        Context.Orbwalker.Settings.Move.Item.SetValue(true);
                     }
-                }
-                if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
-                {
+
                     Context.Orbwalker.Move(Game.MousePosition);
-                }
-                else if (Target != null)
-                {
-                    Context.Orbwalker.OrbwalkTo(Target);
+                    Context.Particle.Remove("SpamTarget");
                 }
             }
-            else
+            catch (TaskCanceledException)
             {
-                Context.Orbwalker.Move(Game.MousePosition);
-                Context.Particle.Remove("SpamTarget");
+                // canceled
+            }
+            catch (Exception e)
+            {
+                Main.Log.Error(e);
             }
         }
     }
