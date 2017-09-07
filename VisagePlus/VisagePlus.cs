@@ -14,13 +14,15 @@ namespace VisagePlus
         name: "VisagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.1",
+        version: "1.0.0.2",
         units: HeroId.npc_dota_hero_visage)]
     internal class VisagePlus : Plugin
     {
         private Config Config { get; set; }
 
         public IServiceContext Context { get; }
+
+        private AbilityFactory AbilityFactory { get; }
 
         [ImportingConstructor]
         public VisagePlus([Import] IServiceContext context)
@@ -32,8 +34,6 @@ namespace VisagePlus
         public visage_grave_chill GraveChill { get; set; }
 
         public visage_soul_assumption SoulAssumption { get; set; }
-
-        private AbilityFactory AbilityFactory { get; }
 
         public Dagon Dagon
         {

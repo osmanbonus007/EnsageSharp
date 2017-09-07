@@ -49,9 +49,10 @@ namespace VisagePlus.Features
                 {
                     var EnemyHero =
                         EntityManager<Hero>.Entities.OrderBy(x => x.Health).FirstOrDefault(
-                            x =>
+                            x => !x.IsIllusion &&
                             x.IsAlive &&
                             x.IsVisible &&
+                            x.IsValid &&
                             x.Team != Context.Owner.Team &&
                             x.Distance2D(Context.Owner) <= Main.SoulAssumption.CastRange);
 
@@ -72,9 +73,10 @@ namespace VisagePlus.Features
                 {
                     var EnemyHero =
                         EntityManager<Hero>.Entities.OrderBy(x => x.Health).FirstOrDefault(
-                            x =>
+                            x => !x.IsIllusion &&
                             x.IsAlive &&
                             x.IsVisible &&
+                            x.IsValid &&
                             x.Team != Context.Owner.Team);
 
                     if (EnemyHero == null)

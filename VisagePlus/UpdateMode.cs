@@ -47,7 +47,8 @@ namespace VisagePlus
                 Context.Particle.Remove("ComboRadius");
             }
 
-            if (Context.TargetSelector.IsActive)
+            if (Context.TargetSelector.IsActive
+                || OffTarget == null || !OffTarget.IsValid || !OffTarget.IsAlive)
             {
                 OffTarget = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
             }
