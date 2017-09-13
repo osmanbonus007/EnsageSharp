@@ -16,7 +16,7 @@ using SharpDX;
 
 namespace VisibleByEnemyPlus
 {
-    [ExportPlugin("VisibleByEnemyPlus", StartupMode.Auto, "YEEEEEEE", "3.0.0.4")]
+    [ExportPlugin("VisibleByEnemyPlus", StartupMode.Auto, "YEEEEEEE", "3.0.0.5")]
     public class VisibleByEnemyPlus : Plugin
     {
         private Unit Owner { get; }
@@ -262,7 +262,7 @@ namespace VisibleByEnemyPlus
                     $"unit_{unit.Handle}",
                     Config.Effects[Config.EffectTypeItem.Value.SelectedIndex],
                     ParticleAttachment.AbsOriginFollow,
-                    RestartType.NormalRestart,
+                    RestartType.FullRestart,
                     1,
                     new Vector3(Red, Green, Blue),
                     2,
