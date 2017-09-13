@@ -59,7 +59,9 @@ namespace SkywrathMagePlus.Features
                 }
 
                 // ArcaneBolt
-                if (!Config.ComboKeyItem && Config.AutoQKeyItem)
+                if (!Config.ComboKeyItem 
+                    && !Config.SpamKeyItem 
+                    && Config.AutoQKeyItem)
                 {
                     var Target =
                         EntityManager<Hero>.Entities.OrderBy(

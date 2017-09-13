@@ -63,9 +63,9 @@ namespace SkywrathMagePlus
                 0.75f,
                 (Config.SpamKeyItem ? Color.Aqua : Color.Yellow));
 
-            Text($"Auto Q {(!Config.ComboKeyItem && Config.AutoQKeyItem ? "ON" : "OFF")}",
+            Text($"Auto Q {(!Config.ComboKeyItem && !Config.SpamKeyItem && Config.AutoQKeyItem ? "ON" : "OFF")}",
                 0.78f,
-                (!Config.ComboKeyItem && Config.AutoQKeyItem ? Color.Aqua : Color.Yellow));
+                (!Config.ComboKeyItem && !Config.SpamKeyItem && Config.AutoQKeyItem ? Color.Aqua : Color.Yellow));
 
             float pos = 0;
             if (Config.AutoComboItem)
