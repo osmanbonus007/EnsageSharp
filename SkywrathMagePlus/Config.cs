@@ -33,11 +33,15 @@ namespace SkywrathMagePlus
 
         public MenuItem<PriorityChanger> LinkenBreakerChanger { get; }
 
+        public MenuItem<bool> TextItem { get; }
+
         public MenuItem<bool> ComboRadiusItem { get; }
 
         public MenuItem<bool> WDrawItem { get; }
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
+
+        public MenuItem<KeyBind> AutoQKeyItem { get; }
 
         public MenuItem<KeyBind> SpamKeyItem { get; }
 
@@ -71,13 +75,17 @@ namespace SkywrathMagePlus
 
         private SpamMode SpamMode { get; }
 
-        private AutoAbility AutoAbility { get; }
+        private AutoCombo AutoCombo { get; }
 
         private AutoDisable AutoDisable { get; }
 
+        public UpdateMode UpdateMode { get; }
+
         private WithoutFail WithoutFail { get; }
 
-        public UpdateMode UpdateMode { get; }
+        private AutoUsage AutoUsage { get; }
+
+        private Renderer Renderer { get; }
 
         private bool Disposed { get; set; }
 
@@ -199,13 +207,16 @@ namespace SkywrathMagePlus
             WRadiusItem.Item.SetTooltip("This only works with Combo");
 
             var DrawingMenu = Factory.Menu("Drawing");
+            TextItem = DrawingMenu.Item("Text", true);
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);
             ComboRadiusItem.Item.SetTooltip("I suggest making a combo in this radius");
-            WDrawItem = DrawingMenu.Item("W Show Target", true);
+            WDrawItem = DrawingMenu.Item("Show W Target", true);
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
-            SpamKeyItem = Factory.Item("Q Spam Key", new KeyBind('Q'));
-            SpamUnitItem = Factory.Item("Q Spam Units", true);
+            AutoQKeyItem = Factory.Item("Auto Q Key", new KeyBind('F', KeyBindType.Toggle, false));
+            AutoQKeyItem.Item.SetValue(new KeyBind(AutoQKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+            SpamKeyItem = Factory.Item("Spam Q Key", new KeyBind('Q'));
+            SpamUnitItem = Factory.Item("Spam Q Units", true);
             SpamUnitItem.Item.SetTooltip("Creeps, Neutrals and Roshan");
             MinDisInOrbwalk = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
@@ -219,11 +230,13 @@ namespace SkywrathMagePlus
 
             Data = new Data();
             LinkenBreaker = new LinkenBreaker(this);
-            SpamMode = new SpamMode(this, SkywrathMagePlus.Context);
-            AutoAbility = new AutoAbility(this, SkywrathMagePlus.Context);
+            SpamMode = new SpamMode(this);
+            AutoCombo = new AutoCombo(this);
             AutoDisable = new AutoDisable(this);
             UpdateMode = new UpdateMode(this);
             WithoutFail = new WithoutFail(this);
+            AutoUsage = new AutoUsage(this);
+            Renderer = new Renderer(this);
         }
 
         private void HotkeyChanged(object sender, OnValueChangeEventArgs e)
@@ -254,16 +267,18 @@ namespace SkywrathMagePlus
 
             if (disposing)
             {
-                Factory.Dispose();
-                UpdateMode.Dispose();
+                Renderer.Dispose();
+                AutoUsage.Dispose();
                 WithoutFail.Dispose();
+                UpdateMode.Dispose();
                 AutoDisable.Dispose();
-                AutoAbility.Dispose();
+                AutoCombo.Dispose();
                 SkywrathMagePlus.Context.Orbwalker.UnregisterMode(Mode);
                 Mode.Deactivate();
                 SpamMode.Dispose();
                 SkywrathMagePlus.Context.Particle.Dispose();
                 ComboKeyItem.Item.ValueChanged -= HotkeyChanged;
+                Factory.Dispose();
             }
 
             Disposed = true;

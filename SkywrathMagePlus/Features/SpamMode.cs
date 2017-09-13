@@ -27,11 +27,11 @@ namespace SkywrathMagePlus
 
         private Unit Target { get; set; }
 
-        public SpamMode(Config config, IServiceContext context)
+        public SpamMode(Config config)
         {
             Config = config;
             Main = config.SkywrathMagePlus;
-            Context = context;
+            Context = config.SkywrathMagePlus.Context;
 
             config.SpamKeyItem.PropertyChanged += SpamKeyChanged;
 

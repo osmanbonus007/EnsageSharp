@@ -47,13 +47,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data.cs" />
-    <Compile Include="Features\AutoAbility.cs" />
+    <Compile Include="Features\AutoUsage.cs" />
+    <Compile Include="Features\AutoCombo.cs" />
     <Compile Include="Features\AutoDisable.cs" />
     <Compile Include="Features\LinkenBreaker.cs" />
     <Compile Include="Features\SpamMode.cs" />
     <Compile Include="Features\WithoutFail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mode.cs" />
+    <Compile Include="Renderer.cs" />
     <Compile Include="SkywrathMagePlus.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="UpdateMode.cs" />

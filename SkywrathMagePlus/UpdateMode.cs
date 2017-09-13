@@ -51,23 +51,6 @@ namespace SkywrathMagePlus
 
         private void OnUpdate()
         {
-            if (Config.EulBladeMailItem)
-            {
-                var Heros = EntityManager<Hero>.Entities.FirstOrDefault(
-                    x => !x.IsIllusion &&
-                    x.IsAlive &&
-                    x.IsVisible &&
-                    x.IsValid &&
-                    x.Team != Context.Owner.Team &&
-                    x.HasModifier("modifier_item_blade_mail_reflect") &&
-                    x.HasModifier("modifier_skywrath_mystic_flare_aura_effect"));
-
-                if (Heros != null && Main.Eul != null && Main.Eul.CanBeCasted)
-                {
-                    Main.Eul.UseAbility(Context.Owner);
-                }
-            }
-
             if (Config.ComboRadiusItem)
             {
                 Context.Particle.DrawRange(
