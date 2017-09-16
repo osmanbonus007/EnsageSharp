@@ -6,7 +6,7 @@ using Ensage.SDK.Menu;
 
 namespace DotaMapPlus
 {
-    public class WeatherHack
+    internal class WeatherHack
     {
         private MenuItem<StringList> WeatherItem { get; }
 
@@ -45,6 +45,5 @@ namespace DotaMapPlus
         {
             Weather.SetValue(WeatherItem.Value.SelectedIndex);
         }
-
     }
 }

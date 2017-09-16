@@ -7,12 +7,12 @@ using Ensage.SDK.Service.Metadata;
 
 namespace DotaMapPlus
 {
-    [ExportPlugin("DotaMapPlus", StartupMode.Auto, "YEEEEEEE", "2.0.0.1")]
-    public class DotaMapPlus : Plugin
+    [ExportPlugin("DotaMapPlus", StartupMode.Auto, "YEEEEEEE", "2.0.0.2")]
+    internal class DotaMapPlus : Plugin
     {
         public Lazy<IInputManager> InputManager { get; }
 
-        private DotaMapPlusConfig DotaMapPlusConfig { get; set; }
+        private Config Config { get; set; }
 
         [ImportingConstructor]
         public DotaMapPlus([Import] Lazy<IInputManager> inputmanager)
@@ -22,12 +22,12 @@ namespace DotaMapPlus
 
         protected override void OnActivate()
         {
-            DotaMapPlusConfig = new DotaMapPlusConfig(InputManager);
+            Config = new Config(InputManager);
         }
 
         protected override void OnDeactivate()
         {
-            DotaMapPlusConfig?.Dispose();
+            Config?.Dispose();
         }
     }
 }

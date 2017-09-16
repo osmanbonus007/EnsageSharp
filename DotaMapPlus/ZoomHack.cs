@@ -8,7 +8,7 @@ using Ensage.SDK.Menu;
 
 namespace DotaMapPlus
 {
-    public class ZoomHack
+    internal class ZoomHack
     {
         private MenuItem<KeyBind> ZoomKeyItem { get; }
 
@@ -40,16 +40,18 @@ namespace DotaMapPlus
             RVar = Game.GetConsoleVar("r_farz");
             RVar.SetValue(2 * ZoomSliderItem.Value);
 
-            ZoomKeyItem.PropertyChanged += ZoomKeyItemChanged;
             ZoomSliderItem.PropertyChanged += ZoomSliderItemChanged;
             InputManage.Value.MouseWheel += InputManagerMouseWheel;
+
+            Game.ExecuteCommand("dota_camera_disable_zoom true");
         }
 
         public void Dispose()
         {
+            Game.ExecuteCommand("dota_camera_disable_zoom false");
+
             ZoomVar.SetValue(DefaultZoomValue);
 
-            ZoomKeyItem.PropertyChanged -= ZoomKeyItemChanged;
             ZoomSliderItem.PropertyChanged -= ZoomSliderItemChanged;
             InputManage.Value.MouseWheel -= InputManagerMouseWheel;
         }
@@ -75,11 +77,6 @@ namespace DotaMapPlus
 
                 ZoomSliderItem.Item.SetValue(new Slider(ZoomValue, MinZoomValue, MaxZoomValue));
             }
-        }
-
-        private void ZoomKeyItemChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Game.ExecuteCommand("dota_camera_disable_zoom " + ZoomKeyItem.Value.Active);
         }
 
         private void ZoomSliderItemChanged(object sender, PropertyChangedEventArgs e)

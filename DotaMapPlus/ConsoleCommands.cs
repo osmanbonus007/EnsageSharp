@@ -6,7 +6,7 @@ using Ensage.SDK.Menu;
 
 namespace DotaMapPlus
 {
-    public class ConsoleCommands
+    internal class ConsoleCommands
     {
         private MenuItem<bool> FogItem { get; }
 

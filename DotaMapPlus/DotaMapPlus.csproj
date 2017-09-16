@@ -58,7 +58,7 @@
   <ItemGroup>
     <Compile Include="ConsoleCommands.cs" />
     <Compile Include="DotaMapPlus.cs" />
-    <Compile Include="DotaMapPlusConfig.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="WeatherHack.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ZoomHack.cs" />
