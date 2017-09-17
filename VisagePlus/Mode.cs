@@ -130,7 +130,7 @@ namespace VisagePlus
                         && Config.AbilityToggler.Value.IsEnabled(Main.SoulAssumption.Ability.Name)
                         && Main.SoulAssumption.CanBeCasted
                         && Main.SoulAssumption.CanHit(Target)
-                        && Main.SoulAssumption.MaxStack)
+                        && Main.SoulAssumption.MaxCharges)
                     {
                         Main.SoulAssumption.UseAbility(Target);
                         await Await.Delay(Main.SoulAssumption.GetCastDelay(Target), token);

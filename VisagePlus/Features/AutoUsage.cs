@@ -61,7 +61,7 @@ namespace VisagePlus.Features
                         && Config.AbilityToggler.Value.IsEnabled(Main.SoulAssumption.Ability.Name)
                         && Main.SoulAssumption.CanBeCasted
                         && Main.SoulAssumption.CanHit(EnemyHero)
-                        && Main.SoulAssumption.MaxStack)
+                        && Main.SoulAssumption.MaxCharges)
                     {
                         Main.SoulAssumption.UseAbility(EnemyHero);
                         await Await.Delay(Main.SoulAssumption.GetCastDelay(EnemyHero), token);
