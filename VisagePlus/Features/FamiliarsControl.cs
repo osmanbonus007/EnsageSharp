@@ -74,7 +74,7 @@ namespace VisagePlus.Features
                         x.IsValid &&
                         x.IsAlive &&
                         x.IsControllable &&
-                        x.Team == Context.Owner.Team &&
+                        Context.Owner.IsAlly(x) &&
                         x.NetworkName == "CDOTA_Unit_VisageFamiliar").ToArray();
 
                 var Others =
@@ -83,7 +83,7 @@ namespace VisagePlus.Features
                         x.IsValid &&
                         x.IsVisible &&
                         x.IsAlive &&
-                        x.Team != Context.Owner.Team);
+                        Context.Owner.IsEnemy(x));
 
                 foreach (var Familiar in Familiars)
                 {

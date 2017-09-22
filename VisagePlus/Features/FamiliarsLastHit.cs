@@ -82,7 +82,7 @@ namespace VisagePlus.Features
                         x.IsValid &&
                         x.IsAlive &&
                         x.IsControllable &&
-                        x.Team == Context.Owner.Team &&
+                        Context.Owner.IsAlly(x) &&
                         x.NetworkName == "CDOTA_Unit_VisageFamiliar").ToArray();
 
                 var AttackingMe =
@@ -97,7 +97,7 @@ namespace VisagePlus.Features
                             x =>
                             x.IsAlive &&
                             x.IsVisible &&
-                            x.Team != Context.Owner.Team &&
+                            Context.Owner.IsEnemy(x) &&
                             x.Distance2D(Familiar) <= x.AttackRange + 400);
 
                     var ClosestAllyTower =
@@ -105,7 +105,7 @@ namespace VisagePlus.Features
                             x =>
                             x.ClassId == ClassId.CDOTA_BaseNPC_Tower &&
                             x.IsAlive &&
-                            x.Team == Context.Owner.Team &&
+                            Context.Owner.IsAlly(x) &&
                             x.Distance2D(Familiar) >= 100);
 
                     if (EnemyHero != null || (AttackingMe != null && AttackingMe.Target.Handle == Familiar.Handle))
@@ -117,10 +117,13 @@ namespace VisagePlus.Features
                                     x =>
                                     x.ClassId == ClassId.CDOTA_BaseNPC_Fort &&
                                     x.IsAlive &&
-                                    x.Team == Context.Owner.Team);
+                                    Context.Owner.IsAlly(x));
 
-                            Familiar.Follow(ClosestAllyFountain);
-                            await Await.Delay(100, token);
+                            if (ClosestAllyFountain != null)
+                            {
+                                Familiar.Follow(ClosestAllyFountain);
+                                await Await.Delay(100, token);
+                            }
                         }
                         else
                         {
@@ -136,7 +139,7 @@ namespace VisagePlus.Features
                                 (x.ClassId == ClassId.CDOTA_BaseNPC_Creep_Lane ||
                                 x.ClassId == ClassId.CDOTA_BaseNPC_Creep_Siege) &&
                                 x.IsAlive &&
-                                x.Team == Context.Owner.Team &&
+                                Context.Owner.IsAlly(x) &&
                                 Familiar.Distance2D(x) <= 3000);
 
                         var ClosestEnemyUnit =
@@ -153,7 +156,7 @@ namespace VisagePlus.Features
                                 x.ClassId == ClassId.CDOTA_BaseNPC_Creature) &&
                                 x.IsAlive &&
                                 x.IsVisible &&
-                                x.Team != Context.Owner.Team &&
+                                Context.Owner.IsEnemy(x) &&
                                 Familiar.Distance2D(x) <= 1000);
 
                         if (ClosestAllyCreep == null || ClosestAllyCreep.Distance2D(Familiar) >= 1000)
@@ -165,7 +168,7 @@ namespace VisagePlus.Features
                                         x =>
                                         x.ClassId == ClassId.CDOTA_BaseNPC_Fort &&
                                         x.IsAlive &&
-                                        x.Team == Context.Owner.Team);
+                                        Context.Owner.IsAlly(x));
 
                                 Familiar.Follow(ClosestAllyFort);
                                 await Await.Delay(200, token);

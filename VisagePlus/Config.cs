@@ -188,7 +188,7 @@ namespace VisagePlus
             FamiliarsFollowItem = FamiliarsMenu.Item("Follow Mouse Position", true);
             FamiliarsFollowItem.Item.SetTooltip("When Combo if there is No Enemy then Follow Mouse Position, Otherwise he Returns to the Hero");
             FamiliarsLowHPItem = FamiliarsMenu.Item("Stone Low HP %", new Slider(30, 0, 80));
-            FamiliarsDamgeItem = FamiliarsMenu.Item("Stone Low Damage", true);
+            FamiliarsDamgeItem = FamiliarsMenu.Item("Stone Low Damage", false);
             FamiliarsChargeItem = FamiliarsMenu.Item("Damage Charge", new Slider(3, 0, 5));
 
             var DrawingMenu = Factory.Menu("Drawing");

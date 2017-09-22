@@ -118,7 +118,7 @@ namespace VisagePlus.Features
                         x.IsValid &&
                         x.IsAlive &&
                         x.IsControllable &&
-                        x.Team == Context.Owner.Team &&
+                        Context.Owner.IsAlly(x) &&
                         (x.NetworkName == "CDOTA_Unit_VisageFamiliar" ||
                         x.Name.Contains("npc_dota_necronomicon_warrior") ||
                         x.Name.Contains("npc_dota_necronomicon_archer"))).ToArray();
@@ -136,9 +136,9 @@ namespace VisagePlus.Features
                 {
                     if (Target != null)
                     {
-                        var StunDebuff = Target.Modifiers.FirstOrDefault(x => x.IsStunDebuff);
-                        var HexDebuff = Target.GetModifierByName("modifier_sheepstick_debuff");
-                        var FamiliarDamage = Familiar.GetModifierByName("modifier_visage_summon_familiars_damage_charge");
+                        var StunDebuff = Target.Modifiers.FirstOrDefault(x => x.IsValid && x.IsStunDebuff);
+                        var HexDebuff = Target.Modifiers.FirstOrDefault(x => x.IsValid && x.Name == "modifier_sheepstick_debuff");
+                        var FamiliarDamage = Familiar.Modifiers.FirstOrDefault(x => x.IsValid && x.Name == "modifier_visage_summon_familiars_damage_charge");
                         var FamiliarsStoneForm = Familiar.GetAbilityById(AbilityId.visage_summon_familiars_stone_form);
                         var ManaBurn = Familiar.GetAbilityById(AbilityId.necronomicon_archer_mana_burn);
 

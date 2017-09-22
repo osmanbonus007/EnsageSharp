@@ -66,7 +66,7 @@ namespace VisagePlus
                 FamiliarTarget = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
             }
 
-            if (Target != null && (Config.DrawOffTargetItem && !Config.ComboKeyItem) || (Config.DrawTargetItem && Config.ComboKeyItem))
+            if (Target != null && ((Config.DrawOffTargetItem && !Config.ComboKeyItem) || (Config.DrawTargetItem && Config.ComboKeyItem)))
             {
                 Context.Particle.DrawTargetLine(
                     Context.Owner,

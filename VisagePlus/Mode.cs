@@ -11,7 +11,6 @@ using Ensage.SDK.Service;
 using Ensage.SDK.TargetSelector;
 
 using PlaySharp.Toolkit.Helper.Annotations;
-using System;
 
 namespace VisagePlus
 {
@@ -41,8 +40,8 @@ namespace VisagePlus
                 && (!Config.BladeMailItem || !Target.HasModifier("modifier_item_blade_mail_reflect")))
             {
                 var StunDebuff = Target.Modifiers.FirstOrDefault(x => x.IsStunDebuff);
-                var HexDebuff = Target.GetModifierByName("modifier_sheepstick_debuff");
-                var AtosDebuff = Target.GetModifierByName("modifier_rod_of_atos_debuff");
+                var HexDebuff = Target.Modifiers.FirstOrDefault(x => x.IsValid && x.Name =="modifier_sheepstick_debuff");
+                var AtosDebuff = Target.Modifiers.FirstOrDefault(x => x.IsValid && x.Name == "modifier_rod_of_atos_debuff");
 
                 if (!Target.IsMagicImmune())
                 {
