@@ -40,13 +40,18 @@ namespace VisagePlus.Features
         {
             try
             {
-                if (Config.Mode.CanExecute)
+                if (Game.IsPaused)
                 {
                     return;
                 }
 
-                if (Config.AutoSoulAssumptionItem.Value)
+                if (Config.AutoSoulAssumptionItem)
                 {
+                    if (Config.ComboKeyItem && Config.AbilityToggler.Value.IsEnabled("visage_soul_assumption"))
+                    {
+                        return;
+                    }
+                    
                     var EnemyHero =
                         EntityManager<Hero>.Entities.OrderBy(x => x.Health).FirstOrDefault(
                             x => !x.IsIllusion &&
@@ -56,9 +61,13 @@ namespace VisagePlus.Features
                             x.Team != Context.Owner.Team &&
                             x.Distance2D(Context.Owner) <= Main.SoulAssumption.CastRange);
 
+                    if (EnemyHero == null)
+                    {
+                        return;
+                    }
+
                     // SoulAssumption
                     if (Main.SoulAssumption != null
-                        && Config.AbilityToggler.Value.IsEnabled(Main.SoulAssumption.Ability.Name)
                         && Main.SoulAssumption.CanBeCasted
                         && Main.SoulAssumption.CanHit(EnemyHero)
                         && Main.SoulAssumption.MaxCharges)
@@ -66,10 +75,9 @@ namespace VisagePlus.Features
                         Main.SoulAssumption.UseAbility(EnemyHero);
                         await Await.Delay(Main.SoulAssumption.GetCastDelay(EnemyHero), token);
                     }
-
                 }
 
-                if (Config.KillStealItem.Value)
+                if (Config.KillStealItem)
                 {
                     var EnemyHero =
                         EntityManager<Hero>.Entities.OrderBy(x => x.Health).FirstOrDefault(
@@ -88,9 +96,10 @@ namespace VisagePlus.Features
                     {
                         // SoulAssumption
                         if (Main.SoulAssumption != null
-                            && Config.KillStealToggler.Value.IsEnabled(Main.SoulAssumption.Ability.Name)
+                            && Config.KillStealToggler.Value.IsEnabled(Main.SoulAssumption.ToString())
                             && Main.SoulAssumption.CanBeCasted
                             && Main.SoulAssumption.CanHit(EnemyHero)
+                            && Main.SoulAssumption.MaxCharges
                             && (Main.Dagon == null || Main.Dagon.CanHit(EnemyHero)))
                         {
                             Main.SoulAssumption.UseAbility(EnemyHero);
@@ -111,22 +120,27 @@ namespace VisagePlus.Features
                     }
                 }
             }
-            catch (Exception)
+            catch (TaskCanceledException)
             {
-                //ignored
+                // canceled
+            }
+            catch (Exception e)
+            {
+                Main.Log.Error(e);
             }
         }
 
         public float Damage(Hero EnemyHero)
         {
             var SoulAssumption = Main.SoulAssumption != null 
-                && Main.SoulAssumption.CanBeCasted 
-                && Config.KillStealToggler.Value.IsEnabled(Main.SoulAssumption.Ability.Name)
+                && Main.SoulAssumption.IsReady 
+                && Main.SoulAssumption.MaxCharges
+                && Config.KillStealToggler.Value.IsEnabled(Main.SoulAssumption.ToString())
                 ? Main.SoulAssumption.GetDamage(EnemyHero) 
                 : 0;
 
             var Dagon = Main.Dagon != null 
-                && Main.Dagon.CanBeCasted
+                && Main.Dagon.IsReady
                 && Config.KillStealToggler.Value.IsEnabled("item_dagon_5")
                 ? Main.Dagon.GetDamage(EnemyHero) 
                 : 0;

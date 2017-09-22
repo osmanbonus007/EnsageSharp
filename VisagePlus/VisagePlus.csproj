@@ -48,8 +48,7 @@
   <ItemGroup>
     <Compile Include="Features\AutoUsage.cs" />
     <Compile Include="Features\FamiliarsLastHit.cs" />
-    <Compile Include="Features\FamiliarsLowHP.cs" />
-    <Compile Include="Features\FamiliarsFollow.cs" />
+    <Compile Include="Features\FamiliarsControl.cs" />
     <Compile Include="Features\FamiliarsCombo.cs" />
     <Compile Include="Features\LinkenBreaker.cs" />
     <Compile Include="Mode.cs" />

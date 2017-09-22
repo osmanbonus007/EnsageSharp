@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using System.Reflection;
 
 using Ensage;
 using Ensage.SDK.Abilities;
@@ -8,13 +9,16 @@ using Ensage.SDK.Service.Metadata;
 using Ensage.SDK.Abilities.Items;
 using Ensage.SDK.Inventory.Metadata;
 
+using log4net;
+using PlaySharp.Toolkit.Logging;
+
 namespace VisagePlus
 {
     [ExportPlugin(
         name: "VisagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.2",
+        version: "1.1.0.0",
         units: HeroId.npc_dota_hero_visage)]
     internal class VisagePlus : Plugin
     {
@@ -23,6 +27,8 @@ namespace VisagePlus
         public IServiceContext Context { get; }
 
         private AbilityFactory AbilityFactory { get; }
+
+        public ILog Log = AssemblyLogs.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [ImportingConstructor]
         public VisagePlus([Import] IServiceContext context)
@@ -107,6 +113,9 @@ namespace VisagePlus
 
         [ItemBinding]
         public item_armlet Armlet { get; set; }
+
+        [ItemBinding]
+        public item_shivas_guard Shivas { get; set; }
 
         protected override void OnActivate()
         {

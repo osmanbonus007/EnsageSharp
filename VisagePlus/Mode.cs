@@ -10,12 +10,12 @@ using Ensage.SDK.Orbwalker.Modes;
 using Ensage.SDK.Service;
 using Ensage.SDK.TargetSelector;
 
-using Ensage.Common.Menu;
-using SharpDX;
+using PlaySharp.Toolkit.Helper.Annotations;
 using System;
 
 namespace VisagePlus
 {
+    [PublicAPI]
     internal class Mode : KeyPressOrbwalkingModeAsync
     {
         private Config Config { get; }
@@ -24,8 +24,6 @@ namespace VisagePlus
 
         private ITargetSelectorManager TargetSelector { get; }
 
-        public Hero Target { get; set;}
-
         public Mode(
             IServiceContext context, 
             Key key,
@@ -33,57 +31,35 @@ namespace VisagePlus
         {
             Config = config;
             Main = config.VisagePlus;
-
-            TargetSelector = context.TargetSelector;
         }
 
         public override async Task ExecuteAsync(CancellationToken token)
         {
-            if (Config.TargetItem.Value.SelectedValue.Contains("Lock") 
-                && (Target == null || !Target.IsValid || !Target.IsAlive))
-            {
-                if (!TargetSelector.IsActive)
-                {
-                    TargetSelector.Activate();
-                }
-
-                if (TargetSelector.IsActive)
-                {
-                    Target = TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
-                }
-
-                if (Target != null)
-                {
-                    if (TargetSelector.IsActive)
-                    {
-                        TargetSelector.Deactivate();
-                    }
-                }
-            }
-            else if (Config.TargetItem.Value.SelectedValue.Contains("Default") && TargetSelector.IsActive)
-            {
-                Target = TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
-            }
-
-            Config.FollowKeyItem.Item.SetValue(new KeyBind(
-                Config.FollowKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
-            Config.LastHitItem.Item.SetValue(new KeyBind(
-                Config.LastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
-
-            Config.FamiliarsCombo.Familiars(Target);
+            var Target = Config.UpdateMode.Target;
 
             if (Target != null
-                && (!Config.BladeMailItem.Value || !Target.HasModifier("modifier_item_blade_mail_reflect")))
+                && (!Config.BladeMailItem || !Target.HasModifier("modifier_item_blade_mail_reflect")))
             {
                 var StunDebuff = Target.Modifiers.FirstOrDefault(x => x.IsStunDebuff);
-                var HexDebuff = Target.Modifiers.FirstOrDefault(x => x.IsDebuff && x.Name == "modifier_sheepstick_debuff");
-                var AtosDebuff = Target.Modifiers.FirstOrDefault(x => x.IsDebuff && x.Name == "modifier_rod_of_atos_debuff");
+                var HexDebuff = Target.GetModifierByName("modifier_sheepstick_debuff");
+                var AtosDebuff = Target.GetModifierByName("modifier_rod_of_atos_debuff");
 
-                if (!Target.IsMagicImmune() && !Target.IsLinkensProtected() && !AntimageShield(Target))
+                if (!Target.IsMagicImmune())
                 {
+                    if (Target.IsLinkensProtected() || AntimageShield(Target))
+                    {
+                        Config.LinkenBreaker.Handler.RunAsync();
+                        
+                        return;
+                    }
+                    else if (Config.LinkenBreaker.Handler.IsRunning)
+                    {
+                        Config.LinkenBreaker.Handler?.Cancel();
+                    }
+
                     // Hex
                     if (Main.Hex != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Hex.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Hex.ToString())
                         && Main.Hex.CanBeCasted
                         && Main.Hex.CanHit(Target)
                         && (StunDebuff == null || StunDebuff.RemainingTime <= 0.3)
@@ -95,7 +71,7 @@ namespace VisagePlus
 
                     // Orchid
                     if (Main.Orchid != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Orchid.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Orchid.ToString())
                         && Main.Orchid.CanBeCasted
                         && Main.Orchid.CanHit(Target))
                     {
@@ -105,7 +81,7 @@ namespace VisagePlus
 
                     // Bloodthorn
                     if (Main.Bloodthorn != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Bloodthorn.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Bloodthorn.ToString())
                         && Main.Bloodthorn.CanBeCasted
                         && Main.Bloodthorn.CanHit(Target))
                     {
@@ -115,7 +91,7 @@ namespace VisagePlus
 
                     // RodofAtos
                     if (Main.RodofAtos != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.RodofAtos.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.RodofAtos.ToString())
                         && Main.RodofAtos.CanBeCasted
                         && Main.RodofAtos.CanHit(Target)
                         && (StunDebuff == null || StunDebuff.RemainingTime <= 0.5)
@@ -127,7 +103,7 @@ namespace VisagePlus
 
                     // SoulAssumption
                     if (Main.SoulAssumption != null
-                        && Config.AbilityToggler.Value.IsEnabled(Main.SoulAssumption.Ability.Name)
+                        && Config.AbilityToggler.Value.IsEnabled(Main.SoulAssumption.ToString())
                         && Main.SoulAssumption.CanBeCasted
                         && Main.SoulAssumption.CanHit(Target)
                         && Main.SoulAssumption.MaxCharges)
@@ -138,7 +114,7 @@ namespace VisagePlus
 
                     // GraveChill
                     if (Main.GraveChill != null
-                        && Config.AbilityToggler.Value.IsEnabled(Main.GraveChill.Ability.Name)
+                        && Config.AbilityToggler.Value.IsEnabled(Main.GraveChill.ToString())
                         && Main.GraveChill.CanBeCasted
                         && Main.GraveChill.CanHit(Target))
                     {
@@ -148,7 +124,7 @@ namespace VisagePlus
 
                     // Veil
                     if (Main.Veil != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Veil.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Veil.ToString())
                         && Main.Veil.CanBeCasted
                         && Main.Veil.CanHit(Target))
                     {
@@ -158,7 +134,7 @@ namespace VisagePlus
 
                     // Medallion
                     if (Main.Medallion != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Medallion.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Medallion.ToString())
                         && Main.Medallion.CanBeCasted
                         && Main.Medallion.CanHit(Target))
                     {
@@ -168,7 +144,7 @@ namespace VisagePlus
 
                     // SolarCrest
                     if (Main.SolarCrest != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.SolarCrest.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.SolarCrest.ToString())
                         && Main.SolarCrest.CanBeCasted
                         && Main.SolarCrest.CanHit(Target))
                     {
@@ -176,9 +152,19 @@ namespace VisagePlus
                         await Await.Delay(Main.SolarCrest.GetCastDelay(Target), token);
                     }
 
+                    // Shivas
+                    if (Main.Shivas != null
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Shivas.ToString())
+                        && Main.Shivas.CanBeCasted
+                        && Owner.Distance2D(Target) <= Main.Shivas.Radius)
+                    {
+                        Main.Shivas.UseAbility();
+                        await Await.Delay(Main.Shivas.GetCastDelay(), token);
+                    }
+
                     // Ethereal
                     if (Main.Ethereal != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Ethereal.Item.Name)
+                        && Config.ItemsToggler.Value.IsEnabled(Main.Ethereal.ToString())
                         && Main.Ethereal.CanBeCasted
                         && Main.Ethereal.CanHit(Target))
                     {
@@ -192,46 +178,42 @@ namespace VisagePlus
                         && Main.Dagon.CanBeCasted
                         && Main.Dagon.CanHit(Target)
                         && (Main.Ethereal == null || (Target.IsEthereal() && !Main.Ethereal.CanBeCasted)
-                        || !Config.ItemsToggler.Value.IsEnabled(Main.Ethereal.Item.Name)))
+                        || !Config.ItemsToggler.Value.IsEnabled(Main.Ethereal.ToString())))
                     {
                         Main.Dagon.UseAbility(Target);
                         await Await.Delay(Main.Dagon.GetCastDelay(Target), token);
                     }
-
-                    // Necronomicon
-                    if (Main.Necronomicon != null
-                        && Config.ItemsToggler.Value.IsEnabled("item_necronomicon_3")
-                        && Main.Necronomicon.CanBeCasted
-                        && Owner.Distance2D(Target) <= Owner.AttackRange)
-                    {
-                        Main.Necronomicon.UseAbility();
-                        await Await.Delay(Main.Necronomicon.GetCastDelay(), token);
-                    }
-
-                    // Armlet
-                    if (Main.Armlet != null
-                        && Config.ItemsToggler.Value.IsEnabled(Main.Armlet.Item.Name)
-                        && !Main.Armlet.Enabled
-                        && Owner.Distance2D(Target) <= Owner.AttackRange)
-                    {
-                        Main.Armlet.UseAbility();
-                        await Await.Delay(Main.Armlet.GetCastDelay(), token);
-                    }
                 }
-                else
+
+                // Necronomicon
+                if (Main.Necronomicon != null
+                    && Config.ItemsToggler.Value.IsEnabled("item_necronomicon_3")
+                    && Main.Necronomicon.CanBeCasted
+                    && Owner.Distance2D(Target) <= Owner.AttackRange)
                 {
-                    await Config.LinkenBreaker.Breaker(token, Target);
+                    Main.Necronomicon.UseAbility();
+                    await Await.Delay(Main.Necronomicon.GetCastDelay(), token);
                 }
-                
-                if (Target == null || Target.IsAttackImmune() || Target.IsInvulnerable())
+
+                // Armlet
+                if (Main.Armlet != null
+                    && Config.ItemsToggler.Value.IsEnabled(Main.Armlet.ToString())
+                    && !Main.Armlet.Enabled
+                    && Owner.Distance2D(Target) <= Owner.AttackRange)
+                {
+                    Main.Armlet.UseAbility();
+                    await Await.Delay(Main.Armlet.GetCastDelay(), token);
+                }
+
+                if (Target != null && (Target.IsInvulnerable() || Target.IsAttackImmune()))
                 {
                     Orbwalker.Settings.Move.Item.SetValue(true);
                     Orbwalker.Move(Game.MousePosition);
                 }
                 else if (Target != null)
                 {
-                    if (Owner.Distance2D(Target) <= Config.MinDisInOrbwalk.Value
-                        && Target.Distance2D(Game.MousePosition) <= Config.MinDisInOrbwalk.Value)
+                    if (Owner.Distance2D(Target) <= Config.MinDisInOrbwalkItem
+                        && Target.Distance2D(Game.MousePosition) <= Config.MinDisInOrbwalkItem)
                     {
                         Orbwalker.Settings.Move.Item.SetValue(false);
                         Orbwalker.OrbwalkTo(Target);

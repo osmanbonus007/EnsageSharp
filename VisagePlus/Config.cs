@@ -23,13 +23,35 @@ namespace VisagePlus
 
         public MenuItem<PriorityChanger> LinkenBreakerChanger { get; }
 
+        public MenuItem<bool> DrawTargetItem { get; }
+
+        public MenuItem<Slider> TargetRedItem { get; }
+
+        public MenuItem<Slider> TargetGreenItem { get; }
+
+        public MenuItem<Slider> TargetBlueItem { get; }
+
+        public MenuItem<bool> DrawOffTargetItem { get; }
+
+        public MenuItem<Slider> OffTargetRedItem { get; }
+
+        public MenuItem<Slider> OffTargetGreenItem { get; }
+
+        public MenuItem<Slider> OffTargetBlueItem { get; }
+
+        public MenuItem<bool> TextItem { get; }
+
         public MenuItem<bool> ComboRadiusItem { get; }
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
-        public MenuItem<Slider> MinDisInOrbwalk { get; }
+        public MenuItem<KeyBind> FamiliarsLockItem { get; }
+
+        public MenuItem<Slider> MinDisInOrbwalkItem { get; }
 
         public MenuItem<KeyBind> FollowKeyItem { get; }
+
+        public MenuItem<bool> FamiliarsFollowItem { get; }
 
         public MenuItem<KeyBind> LastHitItem { get; }
 
@@ -43,6 +65,10 @@ namespace VisagePlus
 
         public MenuItem<Slider> FamiliarsLowHPItem { get; }
 
+        public MenuItem<bool> FamiliarsDamgeItem { get; }
+
+        public MenuItem<Slider> FamiliarsChargeItem { get; }
+
         public MenuItem<StringList> TargetItem { get; }
 
         public MenuItem<AbilityToggler> AntimageBreakerToggler { get; }
@@ -55,11 +81,9 @@ namespace VisagePlus
 
         public FamiliarsCombo FamiliarsCombo { get; }
 
-        private FamiliarsFollow FamiliarsFollow { get; }
-
         private FamiliarsLastHit FamiliarsLastHit { get; }
 
-        private FamiliarsLowHP FamiliarsLowHP { get; }
+        private FamiliarsControl FamiliarsControl { get; }
 
         public AutoUsage AutoUsage { get; }
 
@@ -154,19 +178,43 @@ namespace VisagePlus
 
             AutoSoulAssumptionItem = AutoUsageMenu.Item("Auto Soul Assumption", true);
 
-            var FamiliarsLastHitMenu = Factory.Menu("Familiars Last Hit");
+            var FamiliarsMenu = Factory.Menu("Familiars");
+            var FamiliarsLastHitMenu = FamiliarsMenu.Menu("Last Hit");
             LastHitItem = FamiliarsLastHitMenu.Item("LastHit Key", new KeyBind('W', KeyBindType.Toggle, false));
             CommonAttackItem = FamiliarsLastHitMenu.Item("Common Attack", true);
 
+            FamiliarsLockItem = FamiliarsMenu.Item("Familiars Target Lock Key", new KeyBind('F', KeyBindType.Toggle, false));
+            FollowKeyItem = FamiliarsMenu.Item("Follow Key", new KeyBind('E', KeyBindType.Toggle, false));
+            FamiliarsFollowItem = FamiliarsMenu.Item("Follow Mouse Position", true);
+            FamiliarsFollowItem.Item.SetTooltip("When Combo if there is No Enemy then Follow Mouse Position, Otherwise he Returns to the Hero");
+            FamiliarsLowHPItem = FamiliarsMenu.Item("Stone Low HP %", new Slider(30, 0, 80));
+            FamiliarsDamgeItem = FamiliarsMenu.Item("Stone Low Damage", true);
+            FamiliarsChargeItem = FamiliarsMenu.Item("Damage Charge", new Slider(3, 0, 5));
+
             var DrawingMenu = Factory.Menu("Drawing");
+            var TargetMenu = DrawingMenu.Menu("Target");
+            DrawTargetItem = TargetMenu.Item("Target Enable", true);
+            TargetRedItem = TargetMenu.Item("Red", "red", new Slider(255, 0, 255));
+            TargetRedItem.Item.SetFontColor(Color.Red);
+            TargetGreenItem = TargetMenu.Item("Green", "green", new Slider(0, 0, 255));
+            TargetGreenItem.Item.SetFontColor(Color.Green);
+            TargetBlueItem = TargetMenu.Item("Blue", "blue", new Slider(0, 0, 255));
+            TargetBlueItem.Item.SetFontColor(Color.Blue);
+            DrawOffTargetItem = TargetMenu.Item("Off Target Enable", true);
+            OffTargetRedItem = TargetMenu.Item("Red", "offred", new Slider(0, 0, 255));
+            OffTargetRedItem.Item.SetFontColor(Color.Red);
+            OffTargetGreenItem = TargetMenu.Item("Green", "offgreen", new Slider(255, 0, 255));
+            OffTargetGreenItem.Item.SetFontColor(Color.Green);
+            OffTargetBlueItem = TargetMenu.Item("Blue", "offblue", new Slider(255, 0, 255));
+            OffTargetBlueItem.Item.SetFontColor(Color.Blue);
+
+            TextItem = DrawingMenu.Item("Text", true);
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);
             ComboRadiusItem.Item.SetTooltip("I suggest making a combo in this radius");
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
-            MinDisInOrbwalk = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
-            FollowKeyItem = Factory.Item("Follow Key", new KeyBind('E', KeyBindType.Toggle, false));
-
-            FamiliarsLowHPItem = Factory.Item("Familiars Low HP %", new Slider(30, 0, 80));
+            MinDisInOrbwalkItem = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
+            
             BladeMailItem = Factory.Item("Blade Mail Cancel", false);
             BladeMailItem.Item.SetTooltip("Cancel Combo if there is enemy Blade Mail");
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
@@ -180,9 +228,8 @@ namespace VisagePlus
 
             LinkenBreaker = new LinkenBreaker(this);
             FamiliarsCombo = new FamiliarsCombo(this);
-            FamiliarsFollow = new FamiliarsFollow(this);
             FamiliarsLastHit = new FamiliarsLastHit(this);
-            FamiliarsLowHP = new FamiliarsLowHP(this);
+            FamiliarsControl = new FamiliarsControl(this);
             AutoUsage = new AutoUsage(this);
             UpdateMode = new UpdateMode(this);
             Renderer = new Renderer(this);
@@ -190,6 +237,12 @@ namespace VisagePlus
 
         private void HotkeyChanged(object sender, OnValueChangeEventArgs e)
         {
+            FollowKeyItem.Item.SetValue(new KeyBind(
+               FollowKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+
+            LastHitItem.Item.SetValue(new KeyBind(
+                LastHitItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+
             var KeyCode = e.GetNewValue<KeyBind>().Key;
 
             if (KeyCode == e.GetOldValue<KeyBind>().Key)
@@ -219,11 +272,11 @@ namespace VisagePlus
                 Factory.Dispose();
                 Renderer.Dispose();
                 UpdateMode.Dispose();
-                FamiliarsFollow.Dispose();
                 FamiliarsLastHit.Dispose();
                 AutoUsage.Dispose();
-                FamiliarsLowHP.Dispose();
+                FamiliarsControl.Dispose();
                 VisagePlus.Context.Orbwalker.UnregisterMode(Mode);
+                FamiliarsCombo.Dispose();
                 Mode.Deactivate();
                 VisagePlus.Context.Particle.Dispose();
                 ComboKeyItem.Item.ValueChanged -= HotkeyChanged;

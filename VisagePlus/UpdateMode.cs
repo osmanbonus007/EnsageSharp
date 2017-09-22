@@ -16,7 +16,9 @@ namespace VisagePlus
 
         private IServiceContext Context { get; }
 
-        private Unit OffTarget { get; set; }
+        public Hero Target { get; set; }
+
+        public Hero FamiliarTarget { get; set; }
 
         public UpdateMode(Config config)
         {
@@ -34,7 +36,7 @@ namespace VisagePlus
 
         private void OnUpdate()
         {
-            if (Config.ComboRadiusItem.Value)
+            if (Config.ComboRadiusItem)
             {
                 Context.Particle.DrawRange(
                     Context.Owner,
@@ -47,33 +49,36 @@ namespace VisagePlus
                 Context.Particle.Remove("ComboRadius");
             }
 
-            if (Context.TargetSelector.IsActive
-                || OffTarget == null || !OffTarget.IsValid || !OffTarget.IsAlive)
+            if (Config.TargetItem.Value.SelectedValue.Contains("Lock")
+                && Context.TargetSelector.IsActive
+                && (!Config.ComboKeyItem || Target == null || !Target.IsValid || !Target.IsAlive))
             {
-                OffTarget = Context.TargetSelector.Active.GetTargets().FirstOrDefault();
+                Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
+            }
+            else if (Config.TargetItem.Value.SelectedValue.Contains("Default") && Context.TargetSelector.IsActive)
+            {
+                Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
             }
 
-            if (OffTarget != null)
+            if (Context.TargetSelector.IsActive
+                && (!Config.FamiliarsLockItem || FamiliarTarget == null || !FamiliarTarget.IsValid || !FamiliarTarget.IsAlive))
+            {
+                FamiliarTarget = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
+            }
+
+            if (Target != null && (Config.DrawOffTargetItem && !Config.ComboKeyItem) || (Config.DrawTargetItem && Config.ComboKeyItem))
             {
                 Context.Particle.DrawTargetLine(
                     Context.Owner,
                     "Target",
-                    OffTarget.Position,
-                    Config.Mode.CanExecute ? Color.Red : Color.Aqua);
+                    Target.Position,
+                    Config.ComboKeyItem 
+                    ? new Color(Config.TargetRedItem, Config.TargetGreenItem, Config.TargetBlueItem)
+                    : new Color(Config.OffTargetRedItem, Config.OffTargetGreenItem, Config.OffTargetBlueItem));
             }
             else
             {
                 Context.Particle.Remove("Target");
-            }
-
-            if (!Config.Mode.CanExecute && Config.Mode.Target != null)
-            {
-                if (!Context.TargetSelector.IsActive)
-                {
-                    Context.TargetSelector.Activate();
-                }
-
-                Config.Mode.Target = null;
             }
         }
     }
