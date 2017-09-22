@@ -46,6 +46,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data.cs" />
     <Compile Include="Features\AutoUsage.cs" />
     <Compile Include="Features\FamiliarsLastHit.cs" />
     <Compile Include="Features\FamiliarsControl.cs" />

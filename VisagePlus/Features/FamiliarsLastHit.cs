@@ -59,7 +59,6 @@ namespace VisagePlus.Features
 
                 Config.FamiliarsLockItem.Item.SetValue(new KeyBind(
                     Config.FamiliarsLockItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
-
             }
             else
             {
@@ -142,7 +141,7 @@ namespace VisagePlus.Features
                                 Context.Owner.IsAlly(x) &&
                                 Familiar.Distance2D(x) <= 3000);
 
-                        var ClosestEnemyUnit =
+                        var ClosestUnit =
                             EntityManager<Unit>.Entities.OrderBy(x => (float)x.Health / x.MaximumHealth).FirstOrDefault(
                                 x =>
                                 ((x.ClassId == ClassId.CDOTA_BaseNPC_Tower && x.Health <= 200) ||
@@ -156,7 +155,7 @@ namespace VisagePlus.Features
                                 x.ClassId == ClassId.CDOTA_BaseNPC_Creature) &&
                                 x.IsAlive &&
                                 x.IsVisible &&
-                                Context.Owner.IsEnemy(x) &&
+                                (Config.DenyItem && Context.Owner.IsAlly(x) || Context.Owner.IsEnemy(x)) &&
                                 Familiar.Distance2D(x) <= 1000);
 
                         if (ClosestAllyCreep == null || ClosestAllyCreep.Distance2D(Familiar) >= 1000)
@@ -171,31 +170,31 @@ namespace VisagePlus.Features
                                         Context.Owner.IsAlly(x));
 
                                 Familiar.Follow(ClosestAllyFort);
-                                await Await.Delay(200, token);
-                            }
-                            else
-                            {
-                                Familiar.Follow(ClosestAllyTower);
-                                await Await.Delay(200, token);
-                            }
-                        }
-                        else if (ClosestAllyCreep != null && ClosestEnemyUnit == null)
-                        {
-                            Familiar.Follow(ClosestAllyCreep);
-                            await Await.Delay(200, token);
-                        }
-                        else if (ClosestAllyCreep != null && ClosestEnemyUnit != null)
-                        {
-                            var CommonAttack = Config.CommonAttackItem ? Familiars.Count() : 1;
-                            if (ClosestEnemyUnit.Health <= CommonAttack * Familiar.GetAttackDamage(ClosestEnemyUnit))
-                            {
-                                Familiar.Attack(ClosestEnemyUnit);
                                 await Await.Delay(100, token);
                             }
                             else
                             {
-                                Familiar.Follow(ClosestEnemyUnit);
-                                await Await.Delay(200, token);
+                                Familiar.Follow(ClosestAllyTower);
+                                await Await.Delay(100, token);
+                            }
+                        }
+                        else if (ClosestAllyCreep != null && ClosestUnit == null)
+                        {
+                            Familiar.Follow(ClosestAllyCreep);
+                            await Await.Delay(100, token);
+                        }
+                        else if (ClosestAllyCreep != null && ClosestUnit != null)
+                        {
+                            var CommonAttack = Config.CommonAttackItem ? Familiars.Count() : 1;
+                            if (ClosestUnit.Health <= CommonAttack * Familiar.GetAttackDamage(ClosestUnit))
+                            {
+                                Familiar.Attack(ClosestUnit);
+                                await Await.Delay(100, token);
+                            }
+                            else
+                            {
+                                Familiar.Follow(ClosestUnit);
+                                await Await.Delay(100, token);
                             }
                         }
                     }

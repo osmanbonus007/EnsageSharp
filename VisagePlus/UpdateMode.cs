@@ -36,6 +36,11 @@ namespace VisagePlus
 
         private void OnUpdate()
         {
+            if (Config.EscapeKeyItem && !Config.ComboKeyItem)
+            {
+                Context.Orbwalker.Move(Game.MousePosition);
+            }
+
             if (Config.ComboRadiusItem)
             {
                 Context.Particle.DrawRange(

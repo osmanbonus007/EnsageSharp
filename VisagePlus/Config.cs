@@ -47,9 +47,9 @@ namespace VisagePlus
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
-        public MenuItem<KeyBind> FamiliarsLockItem { get; }
-
         public MenuItem<Slider> MinDisInOrbwalkItem { get; }
+
+        public MenuItem<KeyBind> EscapeKeyItem { get; }
 
         public MenuItem<KeyBind> FollowKeyItem { get; }
 
@@ -59,6 +59,8 @@ namespace VisagePlus
 
         public MenuItem<KeyBind> LastHitItem { get; }
 
+        public MenuItem<bool> DenyItem { get; }
+
         public MenuItem<bool> CommonAttackItem { get; }
 
         public MenuItem<bool> KillStealItem { get; }
@@ -67,9 +69,11 @@ namespace VisagePlus
 
         public MenuItem<bool> AutoSoulAssumptionItem { get; }
 
+        public MenuItem<KeyBind> FamiliarsLockItem { get; }
+
         public MenuItem<Slider> FamiliarsLowHPItem { get; }
 
-        public MenuItem<bool> FamiliarsDamgeItem { get; }
+        public MenuItem<bool> FamiliarsStoneControlItem { get; }
 
         public MenuItem<Slider> FamiliarsChargeItem { get; }
 
@@ -81,13 +85,15 @@ namespace VisagePlus
 
         public MenuItem<bool> BladeMailItem { get; }
 
+        public Data Data { get; }
+
         public LinkenBreaker LinkenBreaker { get; }
+
+        public FamiliarsControl FamiliarsControl { get; }
 
         public FamiliarsCombo FamiliarsCombo { get; }
 
         private FamiliarsLastHit FamiliarsLastHit { get; }
-
-        private FamiliarsControl FamiliarsControl { get; }
 
         public AutoUsage AutoUsage { get; }
 
@@ -185,6 +191,7 @@ namespace VisagePlus
             var FamiliarsMenu = Factory.Menu("Familiars");
             var FamiliarsLastHitMenu = FamiliarsMenu.Menu("Last Hit");
             LastHitItem = FamiliarsLastHitMenu.Item("LastHit Key", new KeyBind('W', KeyBindType.Toggle, false));
+            DenyItem = FamiliarsLastHitMenu.Item("Deny", true);
             CommonAttackItem = FamiliarsLastHitMenu.Item("Common Attack", true);
 
             FamiliarsLockItem = FamiliarsMenu.Item("Familiars Target Lock Key", new KeyBind('F', KeyBindType.Toggle, false));
@@ -193,8 +200,8 @@ namespace VisagePlus
             FamiliarsCourierItem = FamiliarsMenu.Item("Attack Courier", true);
             FamiliarsFollowItem.Item.SetTooltip("When Combo if there is No Enemy then Follow Mouse Position, Otherwise he Returns to the Hero");
             FamiliarsLowHPItem = FamiliarsMenu.Item("Low HP %", new Slider(30, 0, 80));
-            FamiliarsDamgeItem = FamiliarsMenu.Item("Stone Form Control", false);
-            FamiliarsDamgeItem.Item.SetTooltip("Stone will work looking at the amount of charge");
+            FamiliarsStoneControlItem = FamiliarsMenu.Item("Stone Form Control", false);
+            FamiliarsStoneControlItem.Item.SetTooltip("Stone will work looking at the amount of charge");
             FamiliarsChargeItem = FamiliarsMenu.Item("Damage Charge", new Slider(3, 0, 5));
 
             DrawingMenu = Factory.Menu("Drawing");
@@ -221,7 +228,8 @@ namespace VisagePlus
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
             MinDisInOrbwalkItem = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
-            
+            EscapeKeyItem = Factory.Item("Escape Key", new KeyBind('0'));
+
             BladeMailItem = Factory.Item("Blade Mail Cancel", false);
             BladeMailItem.Item.SetTooltip("Cancel Combo if there is enemy Blade Mail");
             TargetItem = Factory.Item("Target", new StringList("Lock", "Default"));
@@ -233,10 +241,11 @@ namespace VisagePlus
             Mode = new Mode(VisagePlus.Context, Key, this);
             VisagePlus.Context.Orbwalker.RegisterMode(Mode);
 
+            Data = new Data();
             LinkenBreaker = new LinkenBreaker(this);
+            FamiliarsControl = new FamiliarsControl(this);
             FamiliarsCombo = new FamiliarsCombo(this);
             FamiliarsLastHit = new FamiliarsLastHit(this);
-            FamiliarsControl = new FamiliarsControl(this);
             AutoUsage = new AutoUsage(this);
             UpdateMode = new UpdateMode(this);
             Renderer = new Renderer(this);

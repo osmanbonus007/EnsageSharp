@@ -21,6 +21,8 @@ namespace VisagePlus.Features
     {
         private Config Config { get; }
 
+        private Data Data { get; }
+
         private VisagePlus Main { get; }
 
         private IServiceContext Context { get; }
@@ -34,6 +36,7 @@ namespace VisagePlus.Features
         public FamiliarsCombo(Config config)
         {
             Config = config;
+            Data = config.Data;
             Main = config.VisagePlus;
             Context = config.VisagePlus.Context;
 
@@ -142,7 +145,7 @@ namespace VisagePlus.Features
                         var FamiliarsStoneForm = Familiar.GetAbilityById(AbilityId.visage_summon_familiars_stone_form);
                         var ManaBurn = Familiar.GetAbilityById(AbilityId.necronomicon_archer_mana_burn);
 
-                        if (!Target.IsMagicImmune())
+                        if (!Target.IsMagicImmune() && !Data.CancelCombo(Target))
                         {
                             // FamiliarsStoneForm
                             if (FamiliarsStoneForm != null &&
@@ -151,8 +154,8 @@ namespace VisagePlus.Features
                                 && Familiar.Distance2D(Target) <= 100
                                 && (StunDebuff == null || StunDebuff.RemainingTime <= 0.5)
                                 && (HexDebuff == null || HexDebuff.RemainingTime <= 0.5)
-                                && (!Config.FamiliarsDamgeItem
-                                || SmartStone(Target) || FamiliarDamage.StackCount <= Config.FamiliarsChargeItem)
+                                && (!Config.FamiliarsStoneControlItem
+                                || Data.SmartStone(Target) || FamiliarDamage.StackCount <= Config.FamiliarsChargeItem)
                                 && !FamiliarsSleeper.Sleeping)
                             {
                                 FamiliarsStoneForm.UseAbility();
@@ -177,17 +180,17 @@ namespace VisagePlus.Features
                         else
 
                         if (Target != null 
-                            && Config.FamiliarsDamgeItem
+                            && Config.FamiliarsStoneControlItem
                             && (FamiliarDamage != null && FamiliarDamage.StackCount > Config.FamiliarsChargeItem)
-                            && !SmartStone(Target))
+                            && !Data.SmartStone(Target))
                         {
                             Familiar.Attack(Target);
                             await Await.Delay(100, token);
                         }
                         else
 
-                        if (Target != null
-                            && !AbilityExtensions.CanBeCasted(FamiliarsStoneForm)
+                        if (Target != null && (Target.IsMagicImmune()
+                            || !AbilityExtensions.CanBeCasted(FamiliarsStoneForm))
                             || ((StunDebuff != null && StunDebuff.RemainingTime >= 0.5)
                             || (HexDebuff != null && HexDebuff.RemainingTime >= 0.5)))
                         {
@@ -223,11 +226,6 @@ namespace VisagePlus.Features
             {
                 Main.Log.Error(e);
             }
-        }
-
-        private bool SmartStone(Hero Target)
-        {
-            return Target.HasModifier("modifier_teleporting");
         }
     }
 }

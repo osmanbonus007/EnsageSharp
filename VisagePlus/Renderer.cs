@@ -85,38 +85,54 @@ namespace VisagePlus
 
             if (Config.FamiliarsLockItem)
             {
-                var Lock = UpdateMode.FamiliarTarget != null;
-                Text($"Familiars: {(Lock ? "Lock" : "Search")}",
+                var active = UpdateMode.FamiliarTarget != null;
+                Text($"Familiars: {(active ? "Lock" : "Search")}",
                     0.66f,
-                    (Lock ? Color.Aqua : Color.Yellow),
+                    (active ? Color.Aqua : Color.Yellow),
                     setPos);
 
-                Texture(0.55f, Lock
+                Texture(0.55f, active
                     ? UpdateMode.FamiliarTarget.Name.Substring("npc_dota_hero_".Length)
                     : "default",
                     setPos);
             }
 
-            Text($"Combo {(Config.ComboKeyItem ? "ON" : "OFF")}",
+            var combo = Config.ComboKeyItem;
+            Text($"Combo {(combo ? "ON" : "OFF")}",
                 0.70f,
-                (Config.ComboKeyItem ? Color.Aqua : Color.Yellow),
+                (combo ? Color.Aqua : Color.Yellow),
                 setPos);
 
-            Text($"Last Hit {(Config.LastHitItem ? "ON" : "OFF")}", 
+            var lasthit = Config.LastHitItem;
+            Text($"Last Hit {(lasthit ? "ON" : "OFF")}", 
                 0.74f, 
-                (Config.LastHitItem ? Color.Aqua : Color.Yellow),
+                (lasthit ? Color.Aqua : Color.Yellow),
                 setPos);
 
-            Text($"Follow {(Config.FollowKeyItem ? "ON" : "OFF")}",
+            var follow = Config.FollowKeyItem;
+            Text($"Follow {(follow ? "ON" : "OFF")}",
                 0.78f,
-                (Config.FollowKeyItem ? Color.Aqua : Color.Yellow),
+                (follow ? Color.Aqua : Color.Yellow),
                 setPos);
 
+            float pos = 0;
             if (Config.KillStealItem)
             {
-                Text($"Kill Steal {(!Config.ComboKeyItem ? "ON" : "OFF")}",
-                    0.82f,
-                    (!Config.ComboKeyItem ? Color.Aqua : Color.Yellow),
+                pos += 0.04f;
+                var active = !Config.ComboKeyItem;
+                Text($"Kill Steal {(active ? "ON" : "OFF")}",
+                    0.78f + pos,
+                    (active ? Color.Aqua : Color.Yellow),
+                    setPos);
+            }
+
+            if (Config.EscapeKeyItem)
+            {
+                pos += 0.04f;
+                var active = !Config.ComboKeyItem && !Config.FamiliarsLockItem && !Config.LastHitItem && !Config.FollowKeyItem;
+                Text($"Escape {(active ? "ON" : "OFF")}",
+                    0.78f + pos,
+                    (active ? Color.Aqua : Color.Yellow),
                     setPos);
             }
         }

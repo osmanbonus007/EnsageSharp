@@ -61,7 +61,7 @@ namespace VisagePlus.Features
                             x.Team != Context.Owner.Team &&
                             x.Distance2D(Context.Owner) <= Main.SoulAssumption.CastRange);
 
-                    if (EnemyHero == null)
+                    if (EnemyHero == null || EnemyHero.IsMagicImmune())
                     {
                         return;
                     }
@@ -87,7 +87,7 @@ namespace VisagePlus.Features
                             x.IsValid &&
                             x.Team != Context.Owner.Team);
 
-                    if (EnemyHero == null)
+                    if (EnemyHero == null || EnemyHero.IsMagicImmune())
                     {
                         return;
                     }
