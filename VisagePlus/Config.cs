@@ -53,6 +53,8 @@ namespace VisagePlus
 
         public MenuItem<bool> FamiliarsFollowItem { get; }
 
+        public MenuItem<bool> FamiliarsCourierItem { get; }
+
         public MenuItem<KeyBind> LastHitItem { get; }
 
         public MenuItem<bool> CommonAttackItem { get; }
@@ -151,7 +153,7 @@ namespace VisagePlus
                 { "item_force_staff" }
             }));
 
-            var AntimageBreakerMenu = Factory.MenuWithTexture("Antimage Breaker", "antimage_spell_shield");
+            var AntimageBreakerMenu = Factory.MenuWithTexture("Anti Mage Breaker", "antimage_spell_shield");
             AntimageBreakerToggler = AntimageBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "visage_soul_assumption", true },
@@ -186,9 +188,11 @@ namespace VisagePlus
             FamiliarsLockItem = FamiliarsMenu.Item("Familiars Target Lock Key", new KeyBind('F', KeyBindType.Toggle, false));
             FollowKeyItem = FamiliarsMenu.Item("Follow Key", new KeyBind('E', KeyBindType.Toggle, false));
             FamiliarsFollowItem = FamiliarsMenu.Item("Follow Mouse Position", true);
+            FamiliarsCourierItem = FamiliarsMenu.Item("Attack Courier", true);
             FamiliarsFollowItem.Item.SetTooltip("When Combo if there is No Enemy then Follow Mouse Position, Otherwise he Returns to the Hero");
-            FamiliarsLowHPItem = FamiliarsMenu.Item("Stone Low HP %", new Slider(30, 0, 80));
-            FamiliarsDamgeItem = FamiliarsMenu.Item("Stone Low Damage", false);
+            FamiliarsLowHPItem = FamiliarsMenu.Item("Low HP %", new Slider(30, 0, 80));
+            FamiliarsDamgeItem = FamiliarsMenu.Item("Stone Form Control", false);
+            FamiliarsDamgeItem.Item.SetTooltip("Stone will work looking at the amount of charge");
             FamiliarsChargeItem = FamiliarsMenu.Item("Damage Charge", new Slider(3, 0, 5));
 
             var DrawingMenu = Factory.Menu("Drawing");

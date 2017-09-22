@@ -77,7 +77,7 @@ namespace VisagePlus.Features
                         Context.Owner.IsAlly(x) &&
                         x.NetworkName == "CDOTA_Unit_VisageFamiliar").ToArray();
 
-                var Others =
+                var Courier =
                     EntityManager<Unit>.Entities.Where(
                         x => !x.IsIllusion &&
                         x.IsValid &&
@@ -102,12 +102,15 @@ namespace VisagePlus.Features
                         await Await.Delay(100, token);
                     }
 
-                    var Courier = Others.OrderBy(x => x.Distance2D(Familiar)).FirstOrDefault(x => x.NetworkName == "CDOTA_Unit_Courier");
-
-                    if (Courier != null && Familiar.Distance2D(Courier) <= 600 && !Config.FollowKeyItem)
+                    if (Config.FamiliarsCourierItem)
                     {
-                        Familiar.Attack(Courier);
-                        await Await.Delay(100, token);
+                        var courier = Courier.OrderBy(x => x.Distance2D(Familiar)).FirstOrDefault(x => x.NetworkName == "CDOTA_Unit_Courier");
+
+                        if (courier != null && Familiar.Distance2D(courier) <= 600 && !Config.FollowKeyItem)
+                        {
+                            Familiar.Attack(courier);
+                            await Await.Delay(100, token);
+                        }
                     }
                 }
             }
