@@ -18,7 +18,7 @@ namespace VisagePlus
         name: "VisagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.1.0.2",
+        version: "1.1.0.3",
         units: HeroId.npc_dota_hero_visage)]
     internal class VisagePlus : Plugin
     {

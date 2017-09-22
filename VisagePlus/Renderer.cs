@@ -2,9 +2,10 @@
 using System.ComponentModel;
 
 using Ensage;
+using Ensage.Common.Menu;
+using Ensage.SDK.Menu;
 
 using SharpDX;
-
 
 namespace VisagePlus
 {
@@ -16,11 +17,18 @@ namespace VisagePlus
 
         private Vector2 Screen {get;}
 
+        private MenuItem<Slider> TextXItem { get; }
+
+        private MenuItem<Slider> TextYItem { get; }
+
         public Renderer(Config config)
         {
             Config = config;
             UpdateMode = config.UpdateMode;
             Screen = new Vector2(Drawing.Width - 160, Drawing.Height);
+
+            TextXItem = Config.DrawingMenu.Item("X", new Slider(0, 0, (int)Screen.X - 60));
+            TextYItem = Config.DrawingMenu.Item("Y", new Slider(0, 0, (int)Screen.Y - 200));
 
             config.TextItem.PropertyChanged += TextChanged;
 
@@ -52,16 +60,16 @@ namespace VisagePlus
             }
         }
 
-        private void Text(string text, float heightpos, Color color)
+        private void Text(string text, float heightpos, Color color, Vector2 setpos)
         {
-            var pos = new Vector2(Screen.X, Screen.Y * heightpos);
+            var pos = new Vector2(Screen.X, Screen.Y * heightpos) - setpos;
 
             Drawing.DrawText(text, "Arial", pos, new Vector2(22), color, FontFlags.None);
         }
 
-        private void Texture(float heightpos, string texture)
+        private void Texture(float heightpos, string texture, Vector2 setpos)
         {
-            var pos = new Vector2(Screen.X, Screen.Y * heightpos);
+            var pos = new Vector2(Screen.X, Screen.Y * heightpos) - setpos;
 
             Drawing.DrawRect(
                 pos, 
@@ -71,35 +79,45 @@ namespace VisagePlus
 
         private void OnDraw(EventArgs args)
         {
+            var setPos = new Vector2(
+                Math.Min(TextXItem, Screen.X - 60),
+                Math.Min(TextYItem, Screen.Y - 230));
+
             if (Config.FamiliarsLockItem)
             {
                 var Lock = UpdateMode.FamiliarTarget != null;
                 Text($"Familiars: {(Lock ? "Lock" : "Search")}",
                     0.66f,
-                    (Lock ? Color.Aqua : Color.Yellow));
+                    (Lock ? Color.Aqua : Color.Yellow),
+                    setPos);
 
                 Texture(0.55f, Lock
                     ? UpdateMode.FamiliarTarget.Name.Substring("npc_dota_hero_".Length)
-                    : "default");
+                    : "default",
+                    setPos);
             }
 
             Text($"Combo {(Config.ComboKeyItem ? "ON" : "OFF")}",
                 0.70f,
-                (Config.ComboKeyItem ? Color.Aqua : Color.Yellow));
+                (Config.ComboKeyItem ? Color.Aqua : Color.Yellow),
+                setPos);
 
             Text($"Last Hit {(Config.LastHitItem ? "ON" : "OFF")}", 
                 0.74f, 
-                (Config.LastHitItem ? Color.Aqua : Color.Yellow));
+                (Config.LastHitItem ? Color.Aqua : Color.Yellow),
+                setPos);
 
             Text($"Follow {(Config.FollowKeyItem ? "ON" : "OFF")}",
                 0.78f,
-                (Config.FollowKeyItem ? Color.Aqua : Color.Yellow));
+                (Config.FollowKeyItem ? Color.Aqua : Color.Yellow),
+                setPos);
 
             if (Config.KillStealItem)
             {
                 Text($"Kill Steal {(!Config.ComboKeyItem ? "ON" : "OFF")}",
                     0.82f,
-                    (!Config.ComboKeyItem ? Color.Aqua : Color.Yellow));
+                    (!Config.ComboKeyItem ? Color.Aqua : Color.Yellow),
+                    setPos);
             }
         }
     }

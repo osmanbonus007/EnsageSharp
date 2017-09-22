@@ -23,6 +23,8 @@ namespace VisagePlus
 
         public MenuItem<PriorityChanger> LinkenBreakerChanger { get; }
 
+        public MenuFactory DrawingMenu { get; }
+
         public MenuItem<bool> DrawTargetItem { get; }
 
         public MenuItem<Slider> TargetRedItem { get; }
@@ -39,9 +41,9 @@ namespace VisagePlus
 
         public MenuItem<Slider> OffTargetBlueItem { get; }
 
-        public MenuItem<bool> TextItem { get; }
-
         public MenuItem<bool> ComboRadiusItem { get; }
+
+        public MenuItem<bool> TextItem { get; }
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
@@ -195,7 +197,7 @@ namespace VisagePlus
             FamiliarsDamgeItem.Item.SetTooltip("Stone will work looking at the amount of charge");
             FamiliarsChargeItem = FamiliarsMenu.Item("Damage Charge", new Slider(3, 0, 5));
 
-            var DrawingMenu = Factory.Menu("Drawing");
+            DrawingMenu = Factory.Menu("Drawing");
             var TargetMenu = DrawingMenu.Menu("Target");
             DrawTargetItem = TargetMenu.Item("Target Enable", true);
             TargetRedItem = TargetMenu.Item("Red", "red", new Slider(255, 0, 255));
@@ -204,6 +206,7 @@ namespace VisagePlus
             TargetGreenItem.Item.SetFontColor(Color.Green);
             TargetBlueItem = TargetMenu.Item("Blue", "blue", new Slider(0, 0, 255));
             TargetBlueItem.Item.SetFontColor(Color.Blue);
+
             DrawOffTargetItem = TargetMenu.Item("Off Target Enable", true);
             OffTargetRedItem = TargetMenu.Item("Red", "offred", new Slider(0, 0, 255));
             OffTargetRedItem.Item.SetFontColor(Color.Red);
@@ -212,9 +215,9 @@ namespace VisagePlus
             OffTargetBlueItem = TargetMenu.Item("Blue", "offblue", new Slider(255, 0, 255));
             OffTargetBlueItem.Item.SetFontColor(Color.Blue);
 
-            TextItem = DrawingMenu.Item("Text", true);
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);
             ComboRadiusItem.Item.SetTooltip("I suggest making a combo in this radius");
+            TextItem = DrawingMenu.Item("Text", true);
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
             MinDisInOrbwalkItem = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
