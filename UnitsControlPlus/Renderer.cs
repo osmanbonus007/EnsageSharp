@@ -92,9 +92,15 @@ namespace UnitsControlPlus
                     (active && (combolock || combopress) ? Color.Aqua : Color.Yellow),
                     setPos);
 
-            Text(combolock || combopress ? "ON" : "OFF",
+            Text($"Control: {(combolock || combopress ? "ON" : "OFF")}",
                     0.80f,
                     (combolock || combopress ? Color.Aqua : Color.Yellow),
+                    setPos);
+
+            var follow = Config.FollowKeyItem;
+            Text($"Follow: {(follow ? "ON" : "OFF")}",
+                    0.84f,
+                    (follow ? Color.Aqua : Color.Yellow),
                     setPos);
         }
 

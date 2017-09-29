@@ -17,7 +17,7 @@ namespace UnitsControlPlus
         public UpdateMode(Config config)
         {
             Config = config;
-            Context = config.UnitsControlPlus.Context;
+            Context = config.Main.Context;
 
             UpdateManager.Subscribe(OnUpdate, 25);
         }
@@ -33,7 +33,7 @@ namespace UnitsControlPlus
                 && !Config.PressKeyItem
                 && (!Config.ToggleKeyItem || Config.ChangeTargetItem || Target == null || !Target.IsValid || !Target.IsAlive))
             {
-                Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
+                Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault(x => x.IsValid) as Hero;
             }
 
             if (!Config.ToggleKeyItem)
@@ -42,11 +42,11 @@ namespace UnitsControlPlus
                 && Context.TargetSelector.IsActive
                 && (Target == null || !Target.IsValid || !Target.IsAlive))
                 {
-                    Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
+                    Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault(x => x.IsValid) as Hero;
                 }
                 else if (Config.PressTargetItem.Value.SelectedValue.Contains("Default") && Context.TargetSelector.IsActive)
                 {
-                    Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
+                    Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault(x => x.IsValid) as Hero;
                 }
             }
         }

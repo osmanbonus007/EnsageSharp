@@ -21,12 +21,10 @@ namespace UnitsControlPlus
 
         private TaskHandler Handler { get; }
 
-        private int GetDelay { get; } = 100 + (int)Game.Ping;
-
         public Mode(Config config)
         {
             Config = config;
-            Owner = config.UnitsControlPlus.Context.Owner;
+            Owner = config.Main.Context.Owner;
 
             config.PressKeyItem.PropertyChanged += PressKeyChanged;
             config.ToggleKeyItem.PropertyChanged += ToggleKeyChanged;
@@ -40,11 +38,25 @@ namespace UnitsControlPlus
             Handler = UpdateManager.Run(ExecuteAsync, true, false);
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             if (Config.PressKeyItem)
             {
                 Handler?.Cancel();
+                if (Config.ControlHeroesItem)
+                {
+                    Config.HeroControl.Handler?.Cancel();
+                }
+            }
+
+            if (Config.PressKeyItem)
+            {
+                Handler?.Cancel();
+
+                if (Config.ControlHeroesItem)
+                {
+                    Config.HeroControl.Handler?.Cancel();
+                }
             }
 
             Config.ToggleKeyItem.PropertyChanged -= ToggleKeyChanged;
@@ -56,29 +68,59 @@ namespace UnitsControlPlus
             if (Handler.IsRunning)
             {
                 Handler?.Cancel();
+
+                if (Config.ControlHeroesItem)
+                {
+                    Config.HeroControl.Handler?.Cancel();
+                }
             }
 
             if (Config.ToggleKeyItem)
             {
+                if (Config.FollowKeyItem)
+                {
+                    Config.FollowKeyItem.Item.SetValue(new KeyBind(
+                        Config.FollowKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+                }
+
                 Handler.RunAsync();
-            }
-            else
-            {
-                Handler?.Cancel();
+
+                if (Config.ControlHeroesItem)
+                {
+                    Config.HeroControl.Handler.RunAsync();
+                }
             }
         }
 
         private void PressKeyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!Config.ToggleKeyItem)
+            if (Config.ToggleKeyItem)
             {
-                if (Config.PressKeyItem)
+                return;
+            }
+
+            if (Config.PressKeyItem)
+            {
+                if (Config.FollowKeyItem)
                 {
-                    Handler.RunAsync();
+                    Config.FollowKeyItem.Item.SetValue(new KeyBind(
+                        Config.FollowKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
                 }
-                else
+
+                Handler.RunAsync();
+
+                if (Config.ControlHeroesItem)
                 {
-                    Handler?.Cancel();
+                    Config.HeroControl.Handler.RunAsync();
+                }
+            }
+            else
+            {
+                Handler?.Cancel();
+
+                if (Config.ControlHeroesItem)
+                {
+                    Config.HeroControl.Handler?.Cancel();
                 }
             }
         }
@@ -94,29 +136,29 @@ namespace UnitsControlPlus
 
                 var Units =
                     EntityManager<Unit>.Entities.Where(
-                        x =>
-                        x.IsValid &&
-                        x.IsAlive &&
-                        x.IsControllable &&
-                        Owner.IsAlly(x) &&
-                        (x.IsIllusion ||
-                        x.NetworkName == "CDOTA_BaseNPC_Additive" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Creep" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Creep_Lane" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Creep_Siege" ||
-                        x.NetworkName == "CDOTA_Unit_Hero_Beastmaster_Boar" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Creep_Neutral" ||
-                        x.NetworkName == "CDOTA_Unit_Broodmother_Spiderling" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Invoker_Forged_Spirit" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Warlock_Golem" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Tusk_Sigil" ||
-                        x.NetworkName == "CDOTA_NPC_WitchDoctor_Ward" ||
-                        x.NetworkName == "CDOTA_BaseNPC_Venomancer_PlagueWard" ||
-                        x.NetworkName == "CDOTA_BaseNPC_ShadowShaman_SerpentWard" ||
-                        x.NetworkName == "CDOTA_Unit_Elder_Titan_AncestralSpirit" ||
-                        x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalEarth" ||
-                        x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalStorm" ||
-                        x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalFire"));
+                                                       x =>
+                                                       x.IsValid &&
+                                                       x.IsAlive &&
+                                                       x.IsControllable &&
+                                                       Owner.IsAlly(x) &&
+                                                       (x.IsIllusion ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Additive" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Creep" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Creep_Lane" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Creep_Siege" ||
+                                                       x.NetworkName == "CDOTA_Unit_Hero_Beastmaster_Boar" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Creep_Neutral" ||
+                                                       x.NetworkName == "CDOTA_Unit_Broodmother_Spiderling" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Invoker_Forged_Spirit" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Warlock_Golem" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Tusk_Sigil" ||
+                                                       x.NetworkName == "CDOTA_NPC_WitchDoctor_Ward" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_Venomancer_PlagueWard" ||
+                                                       x.NetworkName == "CDOTA_BaseNPC_ShadowShaman_SerpentWard" ||
+                                                       x.NetworkName == "CDOTA_Unit_Elder_Titan_AncestralSpirit" ||
+                                                       x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalEarth" ||
+                                                       x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalStorm" ||
+                                                       x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalFire"));
 
                 var Target = Config.UpdateMode.Target;
 
@@ -147,10 +189,10 @@ namespace UnitsControlPlus
                     {
                         var FrostArmorCast =
                             EntityManager<Unit>.Entities.OrderBy(x => Unit.Distance2D(x)).Where(
-                                x => x.IsValid &&
-                                x.IsAlive &&
-                                Owner.IsAlly(x) &&
-                                !x.HasModifier("modifier_ogre_magi_frost_armor"));
+                                                                                                x => x.IsValid &&
+                                                                                                x.IsAlive &&
+                                                                                                Owner.IsAlly(x) &&
+                                                                                                !x.HasModifier("modifier_ogre_magi_frost_armor"));
 
                         var AllyHero = FrostArmorCast.FirstOrDefault(x => Unit.Distance2D(x) < FrostArmor.CastRange && (x == Owner || (x is Hero)));
                         if (AllyHero != null
@@ -162,10 +204,11 @@ namespace UnitsControlPlus
                         else
                         {
                             var AllyUnit = FrostArmorCast.FirstOrDefault(
-                                x => x.IsControllable && 
-                                !x.IsMagicImmune() &&
-                                !x.IsInvulnerable() &&
-                                !x.HasModifier("modifier_ogre_magi_frost_armor"));
+                                                                         x => 
+                                                                         x.IsControllable && 
+                                                                         !x.IsMagicImmune() &&
+                                                                         !x.IsInvulnerable() &&
+                                                                         !x.HasModifier("modifier_ogre_magi_frost_armor"));
 
                             if (AllyUnit != null
                                && CanHit(FrostArmor, Unit, AllyUnit))
@@ -173,7 +216,6 @@ namespace UnitsControlPlus
                                 UseAbility(FrostArmor, Unit, AllyUnit);
                                 await Await.Delay(GetDelay, token);
                             }
-
                         }
                     }
 
@@ -284,7 +326,7 @@ namespace UnitsControlPlus
                                 // Centaur Conqueror War Stomp
                                 var WarStomp = Unit.GetAbilityById(AbilityId.centaur_khan_war_stomp);
                                 if (CanBeCasted(WarStomp, Unit)
-                                    && Unit.Distance2D(Target) < 200
+                                    && Unit.Distance2D(Target) < 150
                                     && !WarStomp.IsInAbilityPhase
                                     && !Target.IsRooted()
                                     && !Target.IsStunned()
@@ -463,7 +505,7 @@ namespace UnitsControlPlus
             }
             catch (Exception e)
             {
-                Config.UnitsControlPlus.Log.Error(e);
+                Config.Main.Log.Error(e);
             }
         }
     }

@@ -11,6 +11,8 @@ namespace UnitsControlPlus
 {
     internal class Extensions
     {
+        public int GetDelay { get; } = 100 + (int)Game.Ping;
+
         private float LastCastAttempt { get; set; }
 
         public bool CanBeCasted(Ability ability, Unit unit)

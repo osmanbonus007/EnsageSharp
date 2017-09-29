@@ -6,15 +6,21 @@ using Ensage.SDK.Menu;
 
 using SharpDX;
 
+using UnitsControlPlus.Features;
+
 namespace UnitsControlPlus
 {
     internal class Config : IDisposable
     {
-        private MenuFactory Factory { get; }
-
-        public UnitsControlPlus UnitsControlPlus { get; }
+        public UnitsControlPlus Main { get; }
 
         public Vector2 Screen { get; }
+
+        private MenuFactory Factory { get; }
+
+        public MenuFactory ControllableMenu { get; }
+
+        public MenuItem<bool> ControlHeroesItem { get; }
 
         public MenuItem<bool> TextItem { get; }
 
@@ -30,13 +36,19 @@ namespace UnitsControlPlus
 
         public MenuItem<KeyBind> ChangeTargetItem { get; }
 
+        public MenuItem<KeyBind> FollowKeyItem { get; }
+
         public MenuItem<StringList> PressTargetItem { get; }
 
         public MenuItem<Slider> ControlWithoutTargetItem { get; }
 
         public MenuItem<StringList> WithoutTargetItem { get; }
 
-        public Mode Mode { get; }
+        private Mode Mode { get; }
+
+        private FollowMode FollowMode { get; }
+
+        public HeroControl HeroControl { get; }
 
         public UpdateMode UpdateMode { get; }
 
@@ -44,13 +56,16 @@ namespace UnitsControlPlus
 
         private bool Disposed { get; set; }
 
-        public Config(UnitsControlPlus unitscontrolplus)
+        public Config(UnitsControlPlus main)
         {
-            UnitsControlPlus = unitscontrolplus;
+            Main = main;
             Screen = new Vector2(Drawing.Width - 160, Drawing.Height);
 
             Factory = MenuFactory.CreateWithTexture("UnitsControlPlus", "unitscontrolplus");
             Factory.Target.SetFontColor(Color.Aqua);
+
+            ControllableMenu = Factory.Menu("Controllable Heroes");
+            ControlHeroesItem = ControllableMenu.Item("Control Heroes", false);
 
             var DrawingMenu = Factory.Menu("Drawing");
             TextItem = DrawingMenu.Item("Text", true);
@@ -63,12 +78,15 @@ namespace UnitsControlPlus
             PressTargetItem = Factory.Item("Press Target", new StringList("Lock", "Default"));
             ToggleKeyItem = Factory.Item("Toggle Key", new KeyBind('0', KeyBindType.Toggle, false));
             ChangeTargetItem = Factory.Item("Change Target Key", new KeyBind('0'));
+            FollowKeyItem = Factory.Item("Follow Key", new KeyBind('0', KeyBindType.Toggle, false));
 
             ControlWithoutTargetItem = Factory.Item("Control Without Target in Radius", new Slider(5000, 0, 10000));
             ControlWithoutTargetItem.Item.SetTooltip("Control all Units in this radius, if there is no Target");
             WithoutTargetItem = Factory.Item("Without Target", new StringList("Move Mouse Position", "Follow on Hero", "None"));
 
             Mode = new Mode(this);
+            FollowMode = new FollowMode(this);
+            HeroControl = new HeroControl(this);
             UpdateMode = new UpdateMode(this);
             Renderer = new Renderer(this);
         }
@@ -90,6 +108,7 @@ namespace UnitsControlPlus
             {
                 Renderer.Dispose();
                 UpdateMode.Dispose();
+                FollowMode.Dispose();
                 Mode.Dispose();
                 Factory.Dispose();
             }
