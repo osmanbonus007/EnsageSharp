@@ -114,6 +114,15 @@ namespace UnitsControlPlus.Features
 
                 foreach (var Hero in Heroes.ToList())
                 {
+                    //Item Phase Boots
+                    var PhaseBoots = Hero.GetItemById(AbilityId.item_phase_boots);
+                    if (CanBeCasted(PhaseBoots, Hero)
+                        && !PhaseBoots.IsInAbilityPhase)
+                    {
+                        UseAbility(PhaseBoots, Hero);
+                        await Await.Delay(GetDelay, token);
+                    }
+
                     if (Target != null)
                     {
                         if (Hero.Distance2D(Target) > Config.RadiusTargetUnitsItem)
@@ -121,48 +130,101 @@ namespace UnitsControlPlus.Features
                             continue;
                         }
 
-                        if (!Target.IsInvulnerable() && !Target.HasModifier("modifier_winter_wyvern_winters_curse"))
+                        if (!Target.IsInvulnerable() && !Target.HasModifier("modifier_winter_wyvern_winters_curse") && !Hero.IsChanneling())
                         {
-                            var Abilities = Hero.Spellbook.Spells.Where(
-                                                                        x => 
-                                                                        !x.AbilityBehavior.HasFlag(AbilityBehavior.Passive) &&
-                                                                        !x.AbilityBehavior.HasFlag(AbilityBehavior.Hidden));
-
-                            foreach (var Ability in Abilities.ToList())
+                            if (!Target.IsMagicImmune())
                             {
-                                // Spell Q, W, E, R, D
-                                if (Ability != null
-                                    && AbilityToggler.Any(x => x.IsEnabled(Ability.Name))
-                                    && CanBeCasted(Ability, Hero)
-                                    && !Ability.IsInAbilityPhase
-                                    && Hero.Distance2D(Target) < CastRange.FirstOrDefault(x => x.Name == Ability.Name).GetValue<Slider>())
-                                {
-                                    if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.UnitTarget))
-                                    {
-                                        UseAbility(Ability, Hero, Target);
-                                        await Await.Delay(GetDelay, token);
-                                    }
-                                    else if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.Point))
-                                    {
-                                        UseAbility(Ability, Hero, Target.Position);
-                                        await Await.Delay(GetDelay, token);
-                                    }
-                                    else if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.Toggle))
-                                    {
-                                        if (Ability.IsToggled)
-                                        {
-                                            continue;
-                                        }
+                                var Abilities = Hero.Spellbook.Spells.Where(
+                                                                            x =>
+                                                                            !x.AbilityBehavior.HasFlag(AbilityBehavior.Passive) &&
+                                                                            !x.AbilityBehavior.HasFlag(AbilityBehavior.Hidden));
 
-                                        Ability.ToggleAbility();
-                                        await Await.Delay(GetDelay, token);
-                                    }
-                                    else if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.NoTarget))
+                                foreach (var Ability in Abilities.ToList())
+                                {
+                                    // Spell Q, W, E, R, D
+                                    if (Ability != null
+                                        && AbilityToggler.Any(x => x.IsEnabled(Ability.Name))
+                                        && CanBeCasted(Ability, Hero)
+                                        && !Ability.IsInAbilityPhase
+                                        && Hero.Distance2D(Target) < CastRange.FirstOrDefault(x => x.Name == Ability.Name).GetValue<Slider>())
                                     {
-                                        UseAbility(Ability, Hero);
-                                        await Await.Delay(GetDelay, token);
+                                        if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.UnitTarget))
+                                        {
+                                            UseAbility(Ability, Hero, Target);
+                                            await Await.Delay(GetDelay, token);
+                                        }
+                                        else if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.Point))
+                                        {
+                                            UseAbility(Ability, Hero, Target.Position);
+                                            await Await.Delay(GetDelay, token);
+                                        }
+                                        else if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.Toggle))
+                                        {
+                                            if (Ability.IsToggled)
+                                            {
+                                                continue;
+                                            }
+
+                                            Ability.ToggleAbility();
+                                            await Await.Delay(GetDelay, token);
+                                        }
+                                        else if (Ability.AbilityBehavior.HasFlag(AbilityBehavior.NoTarget))
+                                        {
+                                            UseAbility(Ability, Hero);
+                                            await Await.Delay(GetDelay, token);
+                                        }
                                     }
                                 }
+
+                                //Item Medallion Of Courage
+                                var MedallionOfCourage = Hero.GetItemById(AbilityId.item_medallion_of_courage);
+                                if (CanBeCasted(MedallionOfCourage, Hero)
+                                    && CanHit(MedallionOfCourage, Hero, Target)
+                                    && !MedallionOfCourage.IsInAbilityPhase)
+                                {
+                                    UseAbility(MedallionOfCourage, Hero, Target);
+                                    await Await.Delay(GetDelay, token);
+                                }
+
+                                //Item Solar Crest
+                                var SolarCrest = Hero.GetItemById(AbilityId.item_solar_crest);
+                                if (CanBeCasted(SolarCrest, Hero)
+                                    && CanHit(SolarCrest, Hero, Target)
+                                    && !SolarCrest.IsInAbilityPhase)
+                                {
+                                    UseAbility(SolarCrest, Hero, Target);
+                                    await Await.Delay(GetDelay, token);
+                                }
+                            }
+
+                            //Item Abyssal Blade
+                            var AbyssalBlade = Hero.GetItemById(AbilityId.item_abyssal_blade);
+                            if (CanBeCasted(AbyssalBlade, Hero)
+                                && CanHit(AbyssalBlade, Hero, Target)
+                                && !AbyssalBlade.IsInAbilityPhase)
+                            {
+                                UseAbility(AbyssalBlade, Hero, Target);
+                                await Await.Delay(GetDelay, token);
+                            }
+
+                            //Item Mjollnir
+                            var Mjollnir = Hero.GetItemById(AbilityId.item_mjollnir);
+                            if (CanBeCasted(Mjollnir, Hero)
+                                && Hero.Distance2D(Target) < 500
+                                && !Mjollnir.IsInAbilityPhase)
+                            {
+                                UseAbility(Mjollnir, Hero, Hero);
+                                await Await.Delay(GetDelay, token);
+                            }
+
+                            //Item Mask Of Madness
+                            var MaskOfMadness = Hero.GetItemById(AbilityId.item_mask_of_madness);
+                            if (CanBeCasted(MaskOfMadness, Hero)
+                                && Hero.Distance2D(Target) < 1000
+                                && !MaskOfMadness.IsInAbilityPhase)
+                            {
+                                UseAbility(MaskOfMadness, Hero);
+                                await Await.Delay(GetDelay, token);
                             }
                         }
 

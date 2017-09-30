@@ -32,7 +32,8 @@ namespace UnitsControlPlus
                 return false;
             }
 
-            if (unit.IsStunned() || unit.IsMuted() || unit.IsSilenced())
+            var isItem = ability is Item;
+            if (unit.IsStunned() || unit.IsMuted() || !isItem && unit.IsSilenced())
             {
                 return false;
             }

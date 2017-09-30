@@ -147,6 +147,7 @@ namespace UnitsControlPlus
                                                        x.NetworkName == "CDOTA_BaseNPC_Creep_Lane" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Creep_Siege" ||
                                                        x.NetworkName == "CDOTA_Unit_Hero_Beastmaster_Boar" ||
+                                                       x.NetworkName == "CDOTA_Unit_SpiritBear" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Creep_Neutral" ||
                                                        x.NetworkName == "CDOTA_Unit_Broodmother_Spiderling" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Invoker_Forged_Spirit" ||
@@ -173,7 +174,16 @@ namespace UnitsControlPlus
                         UseAbility(WindWalk, Unit);
                         await Await.Delay(GetDelay, token);
                     }
-                    
+
+                    //Item Phase Boots
+                    var PhaseBoots = Unit.GetItemById(AbilityId.item_phase_boots);
+                    if (CanBeCasted(PhaseBoots, Unit)
+                        && !PhaseBoots.IsInAbilityPhase)
+                    {
+                        UseAbility(PhaseBoots, Unit);
+                        await Await.Delay(GetDelay, token);
+                    }
+
                     // Hill Troll Priest Heal
                     var Heal = Unit.GetAbilityById(AbilityId.forest_troll_high_priest_heal);
                     if (Heal != null
@@ -275,7 +285,7 @@ namespace UnitsControlPlus
                             continue;
                         }
 
-                        if (!Target.IsInvulnerable() && !Target.HasModifier("modifier_winter_wyvern_winters_curse"))
+                        if (!Target.IsInvulnerable() && !Target.HasModifier("modifier_winter_wyvern_winters_curse") && !Unit.IsChanneling())
                         {
                             if (!Target.IsMagicImmune())
                             {
@@ -310,6 +320,26 @@ namespace UnitsControlPlus
                                     && !EarthThunderClap.IsInAbilityPhase)
                                 {
                                     UseAbility(EarthThunderClap, Unit);
+                                    await Await.Delay(GetDelay, token);
+                                }
+
+                                //Item Medallion Of Courage
+                                var MedallionOfCourage = Unit.GetItemById(AbilityId.item_medallion_of_courage);
+                                if (CanBeCasted(MedallionOfCourage, Unit)
+                                    && CanHit(MedallionOfCourage, Unit, Target)
+                                    && !MedallionOfCourage.IsInAbilityPhase)
+                                {
+                                    UseAbility(MedallionOfCourage, Unit, Target);
+                                    await Await.Delay(GetDelay, token);
+                                }
+
+                                //Item Solar Crest
+                                var SolarCrest = Unit.GetItemById(AbilityId.item_solar_crest);
+                                if (CanBeCasted(SolarCrest, Unit)
+                                    && CanHit(SolarCrest, Unit, Target)
+                                    && !SolarCrest.IsInAbilityPhase)
+                                {
+                                    UseAbility(SolarCrest, Unit, Target);
                                     await Await.Delay(GetDelay, token);
                                 }
 
@@ -438,6 +468,36 @@ namespace UnitsControlPlus
                                 && !Unit.IsInvisible())
                             {
                                 UseAbility(DispelMagic, Unit, Target.Position);
+                                await Await.Delay(GetDelay, token);
+                            }
+
+                            //Item Abyssal Blade
+                            var AbyssalBlade = Unit.GetItemById(AbilityId.item_abyssal_blade);
+                            if (CanBeCasted(AbyssalBlade, Unit)
+                                && CanHit(AbyssalBlade, Unit, Target)
+                                && !AbyssalBlade.IsInAbilityPhase)
+                            {
+                                UseAbility(AbyssalBlade, Unit, Target);
+                                await Await.Delay(GetDelay, token);
+                            }
+
+                            //Item Mjollnir
+                            var Mjollnir = Unit.GetItemById(AbilityId.item_mjollnir);
+                            if (CanBeCasted(Mjollnir, Unit)
+                                && Unit.Distance2D(Target) < 500
+                                && !Mjollnir.IsInAbilityPhase)
+                            {
+                                UseAbility(Mjollnir, Unit, Unit);
+                                await Await.Delay(GetDelay, token);
+                            }
+
+                            //Item Mask Of Madness
+                            var MaskOfMadness = Unit.GetItemById(AbilityId.item_mask_of_madness);
+                            if (CanBeCasted(MaskOfMadness, Unit)
+                                && Unit.Distance2D(Target) < 1000
+                                && !MaskOfMadness.IsInAbilityPhase)
+                            {
+                                UseAbility(MaskOfMadness, Unit);
                                 await Await.Delay(GetDelay, token);
                             }
 
