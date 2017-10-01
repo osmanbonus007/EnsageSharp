@@ -391,11 +391,11 @@ namespace UnitsControlPlus
 
                                 // Hellbear Smasher Thunder Clap
                                 var ThunderClap = Unit.GetAbilityById(AbilityId.polar_furbolg_ursa_warrior_thunder_clap);
-                                if (CanBeCasted(EarthThunderClap, Unit)
-                                    && Unit.Distance2D(Target) < EarthThunderClap.GetAbilitySpecialData("radius")
-                                    && !EarthThunderClap.IsInAbilityPhase)
+                                if (CanBeCasted(ThunderClap, Unit)
+                                    && Unit.Distance2D(Target) < ThunderClap.GetAbilitySpecialData("radius") - 100
+                                    && !ThunderClap.IsInAbilityPhase)
                                 {
-                                    UseAbility(EarthThunderClap, Unit);
+                                    UseAbility(ThunderClap, Unit);
                                     await Await.Delay(GetDelay, token);
                                 }
 
