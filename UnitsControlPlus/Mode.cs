@@ -541,7 +541,14 @@ namespace UnitsControlPlus
                     }
                     else
                     {
-                        if (Unit.Distance2D(Owner) > 2000)
+                        if (Unit.NetworkName == "CDOTA_BaseNPC_Venomancer_PlagueWard"
+                            || Unit.NetworkName == "CDOTA_BaseNPC_ShadowShaman_SerpentWard"
+                            || Unit.NetworkName == "CDOTA_NPC_WitchDoctor_Ward")
+                        {
+                            continue;
+                        }
+
+                        if (Unit.Distance2D(Owner) > Config.ControlWithoutTargetItem)
                         {
                             continue;
                         }

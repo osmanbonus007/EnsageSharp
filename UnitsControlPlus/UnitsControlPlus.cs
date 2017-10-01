@@ -13,7 +13,7 @@ namespace UnitsControlPlus
         name: "UnitsControlPlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.2.1")]
+        version: "1.0.3.0")]
     internal class UnitsControlPlus : Plugin
     {
         private Config Config { get; set; }

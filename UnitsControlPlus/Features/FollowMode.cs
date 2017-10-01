@@ -99,14 +99,12 @@ namespace UnitsControlPlus.Features
                                                        x.NetworkName == "CDOTA_BaseNPC_Creep_Lane" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Creep_Siege" ||
                                                        x.NetworkName == "CDOTA_Unit_Hero_Beastmaster_Boar" ||
+                                                       x.NetworkName == "CDOTA_Unit_SpiritBear" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Creep_Neutral" ||
                                                        x.NetworkName == "CDOTA_Unit_Broodmother_Spiderling" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Invoker_Forged_Spirit" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Warlock_Golem" ||
                                                        x.NetworkName == "CDOTA_BaseNPC_Tusk_Sigil" ||
-                                                       x.NetworkName == "CDOTA_NPC_WitchDoctor_Ward" ||
-                                                       x.NetworkName == "CDOTA_BaseNPC_Venomancer_PlagueWard" ||
-                                                       x.NetworkName == "CDOTA_BaseNPC_ShadowShaman_SerpentWard" ||
                                                        x.NetworkName == "CDOTA_Unit_Elder_Titan_AncestralSpirit" ||
                                                        x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalEarth" ||
                                                        x.NetworkName == "CDOTA_Unit_Brewmaster_PrimalStorm" ||
@@ -121,6 +119,15 @@ namespace UnitsControlPlus.Features
                         && !Unit.IsInvisible())
                     {
                         UseAbility(WindWalk, Unit);
+                        await Await.Delay(GetDelay, token);
+                    }
+
+                    //Item Phase Boots
+                    var PhaseBoots = Unit.GetItemById(AbilityId.item_phase_boots);
+                    if (CanBeCasted(PhaseBoots, Unit)
+                        && !PhaseBoots.IsInAbilityPhase)
+                    {
+                        UseAbility(PhaseBoots, Unit);
                         await Await.Delay(GetDelay, token);
                     }
 
