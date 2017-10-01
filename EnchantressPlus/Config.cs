@@ -57,7 +57,7 @@ namespace EnchantressPlus
 
         public EnchantressPlus Main { get; }
 
-        public Mode Mode { get; }
+        private Mode Mode { get; }
 
         public UpdateMode UpdateMode { get; }
 
@@ -84,6 +84,7 @@ namespace EnchantressPlus
                 { "item_dagon_5", true },
                 { "item_veil_of_discord", true },
                 { "item_ethereal_blade", true },
+                { "item_heavens_halberd", true },
                 { "item_hurricane_pike", true },
                 { "item_necronomicon_3", true },
                 { "item_rod_of_atos", true },
@@ -100,6 +101,7 @@ namespace EnchantressPlus
                 { "item_rod_of_atos", true},
                 { "item_bloodthorn", true },
                 { "item_orchid", true },
+                { "item_heavens_halberd", true },
                 { "item_cyclone", true },
                 { "item_force_staff", true }
             }));
@@ -111,6 +113,7 @@ namespace EnchantressPlus
                 { "item_rod_of_atos" },
                 { "item_bloodthorn" },
                 { "item_orchid" },
+                { "item_heavens_halberd" },
                 { "item_cyclone" },
                 { "item_force_staff" }
             }));
@@ -120,6 +123,7 @@ namespace EnchantressPlus
             {
                 { "enchantress_enchant", true },
                 { "item_rod_of_atos", true},
+                { "item_heavens_halberd", true },
                 { "item_cyclone", true },
                 { "item_force_staff", true }
             }));
@@ -128,6 +132,7 @@ namespace EnchantressPlus
             {
                 { "enchantress_enchant" },
                 { "item_rod_of_atos" },
+                { "item_heavens_halberd" },
                 { "item_cyclone" },
                 { "item_force_staff" }
             }));
@@ -173,25 +178,6 @@ namespace EnchantressPlus
 
         private void HotkeyChanged(object sender, OnValueChangeEventArgs e)
         {
-            // Impetus True
-            var Impetus = Main.Impetus;
-            if (Impetus != null
-                && e.GetNewValue<KeyBind>().Active
-                && AbilityToggler.Value.IsEnabled(Impetus.ToString())
-                && !Impetus.Ability.IsAutoCastEnabled)
-            {
-                Impetus.Ability.ToggleAutocastAbility();
-            }
-
-            // Impetus False
-            if (Impetus != null
-                && !e.GetNewValue<KeyBind>().Active
-                && AbilityToggler.Value.IsEnabled(Impetus.ToString())
-                && Impetus.Ability.IsAutoCastEnabled)
-            {
-                Impetus.Ability.ToggleAutocastAbility();
-            }
-
             var KeyCode = e.GetNewValue<KeyBind>().Key;
 
             if (KeyCode == e.GetOldValue<KeyBind>().Key)

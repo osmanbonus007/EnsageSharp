@@ -18,7 +18,7 @@ namespace EnchantressPlus
         name: "EnchantressPlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.0",
+        version: "1.0.1.0",
         units: HeroId.npc_dota_hero_enchantress)]
     internal class EnchantressPlus : Plugin
     {
@@ -112,6 +112,9 @@ namespace EnchantressPlus
 
         [ItemBinding]
         public item_hurricane_pike HurricanePike { get; set; }
+
+        [ItemBinding]
+        public item_heavens_halberd HeavensHalberd { get; set; }
 
         protected override void OnActivate()
         {

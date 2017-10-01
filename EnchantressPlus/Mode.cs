@@ -45,7 +45,7 @@ namespace EnchantressPlus
 
                 if (!Target.IsMagicImmune() && !Target.IsInvulnerable() && !Target.HasModifier("modifier_winter_wyvern_winters_curse"))
                 {
-                    if (Target.IsLinkensProtected() || AntimageShield(Target))
+                    if (Target.IsLinkensProtected() || Config.LinkenBreaker.AntimageShield(Target))
                     {
                         Config.LinkenBreaker.Handler.RunAsync();
 
@@ -126,6 +126,17 @@ namespace EnchantressPlus
                         await Await.Delay(HurricanePike.GetCastDelay(Target), token);
                     }
 
+                    // HeavensHalberd
+                    var HeavensHalberd = Main.HeavensHalberd;
+                    if (HeavensHalberd != null
+                        && Config.ItemsToggler.Value.IsEnabled(HeavensHalberd.ToString())
+                        && HeavensHalberd.CanBeCasted
+                        && HeavensHalberd.CanHit(Target))
+                    {
+                        HeavensHalberd.UseAbility(Target);
+                        await Await.Delay(HeavensHalberd.GetCastDelay(Target), token);
+                    }
+
                     // Veil
                     var Veil = Main.Veil;
                     if (Veil != null
@@ -204,7 +215,7 @@ namespace EnchantressPlus
                             Orbwalker.Settings.Move.Item.SetValue(false);
                         }
 
-                        Orbwalker.OrbwalkTo(Target);
+                        await ImpetusCast(Target, token);
                     }
                     else
                     {
@@ -213,7 +224,7 @@ namespace EnchantressPlus
                             Orbwalker.Settings.Move.Item.SetValue(true);
                         }
 
-                        Orbwalker.OrbwalkTo(Target);
+                        await ImpetusCast(Target, token);
                     }
                 }
             }
@@ -228,14 +239,47 @@ namespace EnchantressPlus
             }
         }
 
-        public bool AntimageShield(Hero Target)
+        private async Task<bool> ImpetusCast(Hero target, CancellationToken token)
         {
-            var Shield = Target.GetAbilityById(AbilityId.antimage_spell_shield);
+            var Impetus = Main.Impetus;
+            var ModifierHurricanePike = Owner.HasModifier("modifier_item_hurricane_pike_range");
 
-            return Shield != null 
-                && Shield.Cooldown == 0
-                && Shield.Level > 0
-                && Target.GetItemById(AbilityId.item_ultimate_scepter) != null;
+            if (Impetus == null || !Config.AbilityToggler.Value.IsEnabled(Impetus.ToString()))
+            {
+                if (ModifierHurricanePike)
+                {
+                    return Orbwalker.Attack(target);
+                }
+
+                return Orbwalker.OrbwalkTo(target);
+            }
+
+            // Impetus Autocast
+            if (ModifierHurricanePike)
+            {
+                if (!Impetus.Ability.IsAutoCastEnabled)
+                {
+                    Impetus.Ability.ToggleAutocastAbility();
+                }
+
+                return Orbwalker.Attack(target);
+            }
+            else if (Impetus.Ability.IsAutoCastEnabled)
+            {
+                Impetus.Ability.ToggleAutocastAbility();
+            }
+
+            // Impetus
+            if (Impetus.CanBeCasted
+                && Orbwalker.CanAttack(target))
+            {
+                Impetus.UseAbility(target);
+                await Await.Delay(Impetus.GetCastDelay(target), token);
+
+                return true;
+            }
+
+            return Orbwalker.OrbwalkTo(target);
         }
     }
 }

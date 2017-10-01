@@ -59,7 +59,7 @@ namespace EnchantressPlus
             {
                 Context.Particle.DrawTargetLine(
                     Context.Owner,
-                    "EnchantressTarget",
+                    "PlusTarget",
                     Target.Position,
                     Config.ComboKeyItem 
                     ? new Color(Config.TargetRedItem, Config.TargetGreenItem, Config.TargetBlueItem)
@@ -67,7 +67,7 @@ namespace EnchantressPlus
             }
             else
             {
-                Context.Particle.Remove("EnchantressTarget");
+                Context.Particle.Remove("PlusTarget");
             }
         }
     }

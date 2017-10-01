@@ -119,6 +119,18 @@ namespace EnchantressPlus.Features
                         await Await.Delay(RodofAtos.GetCastDelay(Target), token);
                     }
 
+                    // HeavensHalberd
+                    var HeavensHalberd = Main.HeavensHalberd;
+                    if (HeavensHalberd != null
+                        && HeavensHalberd.ToString() == Order.Key
+                        && (Target.IsLinkensProtected() || AntimageShield(Target))
+                        && HeavensHalberd.CanBeCasted
+                        && HeavensHalberd.CanHit(Target))
+                    {
+                        HeavensHalberd.UseAbility(Target);
+                        await Await.Delay(HeavensHalberd.GetCastDelay(Target), token);
+                    }
+
                     // Enchant
                     var Enchant = Main.Enchant;
                     if (Enchant != null
