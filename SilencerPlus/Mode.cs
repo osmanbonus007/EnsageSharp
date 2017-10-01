@@ -127,7 +127,7 @@ namespace SilencerPlus
                             new PredictionInput(
                                 Owner,
                                 Target,
-                                0,
+                                1,
                                 float.MaxValue,
                                 CurseOfSilent.CastRange,
                                 CurseOfSilent.Radius,
@@ -174,7 +174,7 @@ namespace SilencerPlus
                         && Veil.CanHit(Target))
                     {
                         Veil.UseAbility(Target.Position);
-                        await Await.Delay(Veil.GetCastDelay(Target), token);
+                        await Await.Delay(Veil.GetCastDelay(Target.Position), token);
                     }
 
                     // Shivas

@@ -18,7 +18,7 @@ namespace SilencerPlus
         name: "SilencerPlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.0",
+        version: "1.0.0.1",
         units: HeroId.npc_dota_hero_silencer)]
     internal class SilencerPlus : Plugin
     {
