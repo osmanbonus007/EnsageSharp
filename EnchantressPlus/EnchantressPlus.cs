@@ -19,7 +19,7 @@ namespace EnchantressPlus
         name: "EnchantressPlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.2.0",
+        version: "1.1.0.0",
         units: HeroId.npc_dota_hero_enchantress)]
     internal class EnchantressPlus : Plugin
     {
