@@ -203,8 +203,8 @@ namespace EnchantressPlus
                 }
                 else
                 {
-                    if ((Owner.Distance2D(Target) <= Config.MinDisInOrbwalkItem
-                        && Target.Distance2D(Game.MousePosition) <= Config.MinDisInOrbwalkItem))
+                    if (Owner.Distance2D(Target) <= Config.MinDisInOrbwalkItem
+                        && Target.Distance2D(Game.MousePosition) <= Config.MinDisInOrbwalkItem)
                     {
                         if (Orbwalker.Settings.Move)
                         {
