@@ -23,9 +23,15 @@ namespace EnchantressPlus
 
         public MenuItem<PriorityChanger> LinkenBreakerChanger { get; }
 
-        public MenuItem<AbilityToggler> AntimageBreakerToggler { get; }
+        public MenuItem<AbilityToggler> AntiMageBreakerToggler { get; }
 
-        public MenuItem<PriorityChanger> AntimageBreakerChanger { get; }
+        public MenuItem<PriorityChanger> AntiMageBreakerChanger { get; }
+
+        public MenuItem<bool> UseOnlyFromRangeItem { get; }
+
+        public MenuItem<bool> NaturesAttendantsItem { get; }
+
+        public MenuItem<Slider> MinHPItem { get; }
 
         public MenuItem<bool> DrawTargetItem { get; }
 
@@ -53,13 +59,15 @@ namespace EnchantressPlus
 
         public MenuItem<bool> BladeMailItem { get; }
 
-        public LinkenBreaker LinkenBreaker { get; }
-
         public EnchantressPlus Main { get; }
+
+        public UpdateMode UpdateMode { get; }
 
         private Mode Mode { get; }
 
-        public UpdateMode UpdateMode { get; }
+        private AutoAbility AutoAbility { get; }
+
+        public LinkenBreaker LinkenBreaker { get; }
 
         private bool Disposed { get; set; }
 
@@ -94,7 +102,8 @@ namespace EnchantressPlus
             }));
 
             var LinkenBreakerMenu = Factory.MenuWithTexture("Linken Breaker", "item_sphere");
-            LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("linkensphere", "Linkens Sphere:"));
+            LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", "linkentoggler", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "enchantress_enchant", true },
                 { "item_sheepstick", true},
@@ -106,7 +115,7 @@ namespace EnchantressPlus
                 { "item_force_staff", true }
             }));
 
-            LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", "linkenchanger", new PriorityChanger(new List<string>
             {
                 { "enchantress_enchant" },
                 { "item_sheepstick" },
@@ -118,8 +127,10 @@ namespace EnchantressPlus
                 { "item_force_staff" }
             }));
 
-            var AntimageBreakerMenu = Factory.MenuWithTexture("Anti Mage Breaker", "antimage_spell_shield");
-            AntimageBreakerToggler = AntimageBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("empty", ""));
+
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("antiMagespellshield", "AntiMage Spell Shield:"));
+            AntiMageBreakerToggler = LinkenBreakerMenu.Item("Use: ", "antimagetoggler", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "enchantress_enchant", true },
                 { "item_rod_of_atos", true},
@@ -128,7 +139,7 @@ namespace EnchantressPlus
                 { "item_force_staff", true }
             }));
 
-            AntimageBreakerChanger = AntimageBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            AntiMageBreakerChanger = LinkenBreakerMenu.Item("Priority: ", "antimagechanger", new PriorityChanger(new List<string>
             {
                 { "enchantress_enchant" },
                 { "item_rod_of_atos" },
@@ -136,6 +147,13 @@ namespace EnchantressPlus
                 { "item_cyclone" },
                 { "item_force_staff" }
             }));
+
+            UseOnlyFromRangeItem = LinkenBreakerMenu.Item("Use Only From Range", false);
+            UseOnlyFromRangeItem.Item.SetTooltip("Use only from the Range and do not use another Ability");
+
+            var NaturesAttendantsMenu = Factory.MenuWithTexture("Natures Attendants", "enchantress_natures_attendants");
+            NaturesAttendantsItem = NaturesAttendantsMenu.Item("Enable", true);
+            MinHPItem = NaturesAttendantsMenu.Item("Min HP %", new Slider(30, 0, 80));
 
             var DrawingMenu = Factory.Menu("Drawing");
             var TargetMenu = DrawingMenu.Menu("Target");
@@ -167,13 +185,14 @@ namespace EnchantressPlus
 
             ComboKeyItem.Item.ValueChanged += HotkeyChanged;
 
-            var Key = KeyInterop.KeyFromVirtualKey((int)ComboKeyItem.Value.Key);
+            UpdateMode = new UpdateMode(this);
 
+            var Key = KeyInterop.KeyFromVirtualKey((int)ComboKeyItem.Value.Key);
             Mode = new Mode(Main.Context, Key, this);
             Main.Context.Orbwalker.RegisterMode(Mode);
 
+            AutoAbility = new AutoAbility(this);
             LinkenBreaker = new LinkenBreaker(this);
-            UpdateMode = new UpdateMode(this);
         }
 
         private void HotkeyChanged(object sender, OnValueChangeEventArgs e)

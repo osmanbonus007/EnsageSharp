@@ -10,6 +10,7 @@ using Ensage.SDK.Abilities.Items;
 using Ensage.SDK.Inventory.Metadata;
 
 using log4net;
+
 using PlaySharp.Toolkit.Logging;
 
 namespace EnchantressPlus
@@ -18,7 +19,7 @@ namespace EnchantressPlus
         name: "EnchantressPlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.1.0",
+        version: "1.0.2.0",
         units: HeroId.npc_dota_hero_enchantress)]
     internal class EnchantressPlus : Plugin
     {
@@ -121,6 +122,7 @@ namespace EnchantressPlus
             Config = new Config(this);
 
             Enchant = AbilityFactory.GetAbility<enchantress_enchant>();
+            NaturesAttendants = AbilityFactory.GetAbility<enchantress_natures_attendants>();
             Impetus = AbilityFactory.GetAbility<enchantress_impetus>();
 
             Context.Inventory.Attach(this);
