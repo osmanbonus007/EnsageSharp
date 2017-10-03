@@ -10,6 +10,7 @@ using Ensage.SDK.Abilities.Items;
 using Ensage.SDK.Inventory.Metadata;
 
 using log4net;
+
 using PlaySharp.Toolkit.Logging;
 
 namespace SilencerPlus
@@ -18,7 +19,7 @@ namespace SilencerPlus
         name: "SilencerPlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.0.0.1",
+        version: "1.1.0.0",
         units: HeroId.npc_dota_hero_silencer)]
     internal class SilencerPlus : Plugin
     {
@@ -42,6 +43,8 @@ namespace SilencerPlus
         public silencer_glaives_of_wisdom GlaivesOfWisdom { get; set; }
 
         public silencer_last_word LastWord { get; set; }
+
+        public silencer_global_silence GlobalSilence { get; set; }
 
         public Dagon Dagon
         {
@@ -96,6 +99,9 @@ namespace SilencerPlus
         [ItemBinding]
         public item_hurricane_pike HurricanePike { get; set; }
 
+        [ItemBinding]
+        public item_heavens_halberd HeavensHalberd { get; set; }
+
         protected override void OnActivate()
         {
             Config = new Config(this);
@@ -103,6 +109,7 @@ namespace SilencerPlus
             CurseOfSilent = AbilityFactory.GetAbility<silencer_curse_of_the_silent>();
             GlaivesOfWisdom = AbilityFactory.GetAbility<silencer_glaives_of_wisdom>();
             LastWord = AbilityFactory.GetAbility<silencer_last_word>();
+            GlobalSilence = AbilityFactory.GetAbility<silencer_global_silence>();
 
             Context.Inventory.Attach(this);
         }

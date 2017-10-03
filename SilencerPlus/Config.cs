@@ -13,6 +13,8 @@ namespace SilencerPlus
 {
     internal class Config : IDisposable
     {
+        public SilencerPlus Main { get; }
+
         private MenuFactory Factory { get; }
 
         public MenuItem<AbilityToggler> AbilityToggler { get; }
@@ -23,9 +25,15 @@ namespace SilencerPlus
 
         public MenuItem<PriorityChanger> LinkenBreakerChanger { get; }
 
-        public MenuItem<AbilityToggler> AntimageBreakerToggler { get; }
+        public MenuItem<AbilityToggler> AntiMageBreakerToggler { get; }
 
-        public MenuItem<PriorityChanger> AntimageBreakerChanger { get; }
+        public MenuItem<PriorityChanger> AntiMageBreakerChanger { get; }
+
+        public MenuItem<bool> UseOnlyFromRangeItem { get; }
+
+        public MenuItem<bool> GlobalSilenceItem { get; }
+
+        public MenuItem<AbilityToggler> GlobalSilenceToggler { get; }
 
         public MenuItem<bool> DrawTargetItem { get; }
 
@@ -53,13 +61,13 @@ namespace SilencerPlus
 
         public MenuItem<bool> BladeMailItem { get; }
 
-        public LinkenBreaker LinkenBreaker { get; }
-
-        public SilencerPlus Main { get; }
+        public UpdateMode UpdateMode { get; }
 
         public Mode Mode { get; }
 
-        public UpdateMode UpdateMode { get; }
+        public AutoAbility AutoAbility { get; }
+
+        public LinkenBreaker LinkenBreaker { get; }
 
         private bool Disposed { get; set; }
 
@@ -85,6 +93,7 @@ namespace SilencerPlus
                 { "item_dagon_5", true },
                 { "item_veil_of_discord", true },
                 { "item_ethereal_blade", true },
+                { "item_heavens_halberd", true },
                 { "item_hurricane_pike", true },
                 { "item_rod_of_atos", true },
                 { "item_bloodthorn", true },
@@ -93,43 +102,65 @@ namespace SilencerPlus
             }));
 
             var LinkenBreakerMenu = Factory.MenuWithTexture("Linken Breaker", "item_sphere");
-            LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("linkensphere", "Linkens Sphere:"));
+            LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", "linkentoggler", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "silencer_last_word", true },
                 { "item_sheepstick", true},
                 { "item_rod_of_atos", true},
                 { "item_bloodthorn", true },
                 { "item_orchid", true },
+                { "item_heavens_halberd", true },
                 { "item_cyclone", true },
                 { "item_force_staff", true }
             }));
 
-            LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", "linkenchanger", new PriorityChanger(new List<string>
             {
                 { "silencer_last_word" },
                 { "item_sheepstick" },
                 { "item_rod_of_atos" },
                 { "item_bloodthorn" },
                 { "item_orchid" },
+                { "item_heavens_halberd" },
                 { "item_cyclone" },
                 { "item_force_staff" }
             }));
 
-            var AntimageBreakerMenu = Factory.MenuWithTexture("Anti Mage Breaker", "antimage_spell_shield");
-            AntimageBreakerToggler = AntimageBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("empty", ""));
+
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("antiMagespellshield", "AntiMage Spell Shield:"));
+            AntiMageBreakerToggler = LinkenBreakerMenu.Item("Use: ", "antimagetoggler", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "silencer_last_word", true },
                 { "item_rod_of_atos", true},
+                { "item_heavens_halberd", true },
                 { "item_cyclone", true },
                 { "item_force_staff", true }
             }));
 
-            AntimageBreakerChanger = AntimageBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            AntiMageBreakerChanger = LinkenBreakerMenu.Item("Priority: ", "antimagechanger", new PriorityChanger(new List<string>
             {
                 { "silencer_last_word" },
                 { "item_rod_of_atos" },
+                { "item_heavens_halberd" },
                 { "item_cyclone" },
                 { "item_force_staff" }
+            }));
+
+            UseOnlyFromRangeItem = LinkenBreakerMenu.Item("Use Only From Range", false);
+            UseOnlyFromRangeItem.Item.SetTooltip("Use only from the Range and do not use another Ability");
+
+            var GlobalSilenceMenu = Factory.MenuWithTexture("Global Silence", "silencer_global_silence");
+            GlobalSilenceItem = GlobalSilenceMenu.Item("Enable", true);
+            GlobalSilenceToggler = GlobalSilenceMenu.Item("Use: ", "globalsilencetoggler", new AbilityToggler(new Dictionary<string, bool>
+            {
+                { "enigma_black_hole", true },
+                { "witch_doctor_death_ward", true},
+                { "crystal_maiden_freezing_field", true },
+                { "pudge_dismember", true },
+                { "sandking_epicenter", true},
+                { "bane_fiends_grip", true }
             }));
 
             var DrawingMenu = Factory.Menu("Drawing");
@@ -162,13 +193,14 @@ namespace SilencerPlus
 
             ComboKeyItem.Item.ValueChanged += HotkeyChanged;
 
-            var Key = KeyInterop.KeyFromVirtualKey((int)ComboKeyItem.Value.Key);
+            UpdateMode = new UpdateMode(this);
 
+            var Key = KeyInterop.KeyFromVirtualKey((int)ComboKeyItem.Value.Key);
             Mode = new Mode(Main.Context, Key, this);
             Main.Context.Orbwalker.RegisterMode(Mode);
 
+            AutoAbility = new AutoAbility(this);
             LinkenBreaker = new LinkenBreaker(this);
-            UpdateMode = new UpdateMode(this);
         }
 
         private void HotkeyChanged(object sender, OnValueChangeEventArgs e)
@@ -201,6 +233,7 @@ namespace SilencerPlus
             {
                 UpdateMode.Dispose();
                 Main.Context.Orbwalker.UnregisterMode(Mode);
+                AutoAbility.Dispose();
                 Main.Context.Particle.Dispose();
                 ComboKeyItem.Item.ValueChanged -= HotkeyChanged;
                 Factory.Dispose();
