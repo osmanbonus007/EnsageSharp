@@ -225,7 +225,7 @@ namespace EnchantressPlus
             {
                 UpdateMode.Dispose();
                 Main.Context.Orbwalker.UnregisterMode(Mode);
-				AutoAbility.Dispose();
+                AutoAbility.Dispose();
                 Main.Context.Particle.Dispose();
                 ComboKeyItem.Item.ValueChanged -= HotkeyChanged;
                 Factory.Dispose();
