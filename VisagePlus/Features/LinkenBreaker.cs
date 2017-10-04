@@ -18,14 +18,15 @@ namespace VisagePlus.Features
 
         private VisagePlus Main { get; set; }
 
-        public TaskHandler Handler { get; }
+        private Unit Owner { get; }
 
-        private IOrderedEnumerable<KeyValuePair<string, uint>> BreakerChanger { get; set; }
+        public TaskHandler Handler { get; }
 
         public LinkenBreaker(Config config)
         {
             Config = config;
-            Main = config.VisagePlus;
+            Main = config.Main;
+            Owner = config.Main.Context.Owner;
 
             Handler = UpdateManager.Run(ExecuteAsync, false, false);
         }
@@ -34,106 +35,169 @@ namespace VisagePlus.Features
         {
             try
             {
-                if (Game.IsPaused)
+                var Target = Config.UpdateMode.Target;
+
+                if (Target == null)
                 {
                     return;
                 }
 
-                var Target = Config.UpdateMode.Target;
+                List<KeyValuePair<string, uint>> BreakerChanger = new List<KeyValuePair<string, uint>>();
 
                 if (Target.IsLinkensProtected())
                 {
                     BreakerChanger = Config.LinkenBreakerChanger.Value.Dictionary.Where(
-                        z => Config.LinkenBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
+                        x => Config.LinkenBreakerToggler.Value.IsEnabled(x.Key)).OrderByDescending(x => x.Value).ToList();
                 }
                 else if (AntimageShield(Target))
                 {
-                    BreakerChanger = Config.AntimageBreakerChanger.Value.Dictionary.Where(
-                        z => Config.AntimageBreakerToggler.Value.IsEnabled(z.Key)).OrderByDescending(x => x.Value);
+                    BreakerChanger = Config.AntiMageBreakerChanger.Value.Dictionary.Where(
+                        x => Config.AntiMageBreakerToggler.Value.IsEnabled(x.Key)).OrderByDescending(x => x.Value).ToList();
                 }
 
-                if (BreakerChanger == null)
-                {
-                    return;
-                }
-
-                foreach (var Order in BreakerChanger.ToList())
+                foreach (var Order in BreakerChanger)
                 {
                     // Eul
-                    if (Main.Eul != null
-                        && Main.Eul.Item.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.Eul.CanBeCasted
-                        && Main.Eul.CanHit(Target))
+                    var Eul = Main.Eul;
+                    if (Eul != null
+                        && Eul.ToString() == Order.Key
+                        && Eul.CanBeCasted)
                     {
-                        Main.Eul.UseAbility(Target);
-                        await Await.Delay(Main.Eul.GetCastDelay(Target), token);
+                        if (Eul.CanHit(Target))
+                        {
+                            Eul.UseAbility(Target);
+                            await Await.Delay(Eul.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
 
                     // ForceStaff
-                    if (Main.ForceStaff != null
-                        && Main.ForceStaff.Item.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.ForceStaff.CanBeCasted
-                        && Main.ForceStaff.CanHit(Target))
+                    var ForceStaff = Main.ForceStaff;
+                    if (ForceStaff != null
+                        && ForceStaff.ToString() == Order.Key
+                        && ForceStaff.CanBeCasted)
                     {
-                        Main.ForceStaff.UseAbility(Target);
-                        await Await.Delay(Main.ForceStaff.GetCastDelay(Target), token);
+                        if (ForceStaff.CanHit(Target))
+                        {
+                            ForceStaff.UseAbility(Target);
+                            await Await.Delay(ForceStaff.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
 
                     // Orchid
-                    if (Main.Orchid != null
-                        && Main.Orchid.Item.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.Orchid.CanBeCasted
-                        && Main.Orchid.CanHit(Target))
+                    var Orchid = Main.Orchid;
+                    if (Orchid != null
+                        && Orchid.ToString() == Order.Key
+                        && Orchid.CanBeCasted)
                     {
-                        Main.Orchid.UseAbility(Target);
-                        await Await.Delay(Main.Orchid.GetCastDelay(Target), token);
+                        if (Orchid.CanHit(Target))
+                        {
+                            Orchid.UseAbility(Target);
+                            await Await.Delay(Orchid.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
 
                     // Bloodthorn
-                    if (Main.Bloodthorn != null
-                        && Main.Bloodthorn.Item.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.Bloodthorn.CanBeCasted
-                        && Main.Bloodthorn.CanHit(Target))
+                    var Bloodthorn = Main.Bloodthorn;
+                    if (Bloodthorn != null
+                        && Bloodthorn.ToString() == Order.Key
+                        && Bloodthorn.CanBeCasted)
                     {
-                        Main.Bloodthorn.UseAbility(Target);
-                        await Await.Delay(Main.Bloodthorn.GetCastDelay(Target), token);
+                        if (Bloodthorn.CanHit(Target))
+                        {
+                            Bloodthorn.UseAbility(Target);
+                            await Await.Delay(Bloodthorn.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
 
                     // RodofAtos
-                    if (Main.RodofAtos != null
-                        && Main.RodofAtos.Item.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.RodofAtos.CanBeCasted
-                        && Main.RodofAtos.CanHit(Target))
+                    var RodofAtos = Main.RodofAtos;
+                    if (RodofAtos != null
+                        && RodofAtos.ToString() == Order.Key
+                        && RodofAtos.CanBeCasted)
                     {
-                        Main.RodofAtos.UseAbility(Target);
-                        await Await.Delay(Main.RodofAtos.GetCastDelay(Target), token);
+                        if (RodofAtos.CanHit(Target))
+                        {
+                            RodofAtos.UseAbility(Target);
+                            await Await.Delay(RodofAtos.GetCastDelay(Target) + (int)(Owner.Distance2D(Target) / RodofAtos.Speed * 1000f), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
+                    }
+
+                    // HeavensHalberd
+                    var HeavensHalberd = Main.HeavensHalberd;
+                    if (HeavensHalberd != null
+                        && HeavensHalberd.ToString() == Order.Key
+                        && HeavensHalberd.CanBeCasted)
+                    {
+                        if (HeavensHalberd.CanHit(Target))
+                        {
+                            HeavensHalberd.UseAbility(Target);
+                            await Await.Delay(HeavensHalberd.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
 
                     // SoulAssumption
-                    if (Main.SoulAssumption != null
-                        && Main.SoulAssumption.Ability.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.SoulAssumption.CanBeCasted
-                        && Main.SoulAssumption.CanHit(Target))
+                    var SoulAssumption = Main.SoulAssumption;
+                    if (SoulAssumption.ToString() == Order.Key
+                        && SoulAssumption.CanBeCasted)
                     {
-                        Main.SoulAssumption.UseAbility(Target);
-                        await Await.Delay(Main.SoulAssumption.GetCastDelay(Target), token);
+                        if (SoulAssumption.CanHit(Target))
+                        {
+                            SoulAssumption.UseAbility(Target);
+                            await Await.Delay(SoulAssumption.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
 
                     // Hex
-                    if (Main.Hex != null
-                        && Main.Hex.Item.Name == Order.Key
-                        && (Target.IsLinkensProtected() || AntimageShield(Target))
-                        && Main.Hex.CanBeCasted
-                        && Main.Hex.CanHit(Target))
+                    var Hex = Main.Hex;
+                    if (Hex != null
+                        && Hex.ToString() == Order.Key
+                        && Hex.CanBeCasted)
                     {
-                        Main.Hex.UseAbility(Target);
-                        await Await.Delay(Main.Hex.GetCastDelay(Target), token);
+                        if (Hex.CanHit(Target))
+                        {
+                            Hex.UseAbility(Target);
+                            await Await.Delay(Hex.GetCastDelay(Target), token);
+                            return;
+                        }
+                        else if (Config.UseOnlyFromRangeItem)
+                        {
+                            return;
+                        }
                     }
                 }
             }

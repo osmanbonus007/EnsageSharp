@@ -18,7 +18,7 @@ namespace VisagePlus
         name: "VisagePlus",
         mode: StartupMode.Auto,
         author: "YEEEEEEE", 
-        version: "1.1.1.0",
+        version: "1.2.0.0",
         units: HeroId.npc_dota_hero_visage)]
     internal class VisagePlus : Plugin
     {
@@ -117,21 +117,27 @@ namespace VisagePlus
         [ItemBinding]
         public item_shivas_guard Shivas { get; set; }
 
+        [ItemBinding]
+        public item_hurricane_pike HurricanePike { get; set; }
+
+        [ItemBinding]
+        public item_heavens_halberd HeavensHalberd { get; set; }
+
         protected override void OnActivate()
         {
-            Config = new Config(this);
-
             GraveChill = AbilityFactory.GetAbility<visage_grave_chill>();
             SoulAssumption = AbilityFactory.GetAbility<visage_soul_assumption>();
 
             Context.Inventory.Attach(this);
+
+            Config = new Config(this);
         }
 
         protected override void OnDeactivate()
         {
-            Context.Inventory.Detach(this);
-
             Config?.Dispose();
+
+            Context.Inventory.Detach(this);
         }
     }
 }

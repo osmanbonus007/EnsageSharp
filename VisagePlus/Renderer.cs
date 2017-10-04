@@ -2,8 +2,6 @@
 using System.ComponentModel;
 
 using Ensage;
-using Ensage.Common.Menu;
-using Ensage.SDK.Menu;
 
 using SharpDX;
 
@@ -15,20 +13,10 @@ namespace VisagePlus
 
         private UpdateMode UpdateMode { get; }
 
-        private Vector2 Screen {get;}
-
-        private MenuItem<Slider> TextXItem { get; }
-
-        private MenuItem<Slider> TextYItem { get; }
-
         public Renderer(Config config)
         {
             Config = config;
             UpdateMode = config.UpdateMode;
-            Screen = new Vector2(Drawing.Width - 160, Drawing.Height);
-
-            TextXItem = Config.DrawingMenu.Item("X", new Slider(0, 0, (int)Screen.X - 60));
-            TextYItem = Config.DrawingMenu.Item("Y", new Slider(0, 0, (int)Screen.Y - 200));
 
             config.TextItem.PropertyChanged += TextChanged;
 
@@ -62,14 +50,14 @@ namespace VisagePlus
 
         private void Text(string text, float heightpos, Color color, Vector2 setpos)
         {
-            var pos = new Vector2(Screen.X, Screen.Y * heightpos) - setpos;
+            var pos = new Vector2(Config.Screen.X, Config.Screen.Y * heightpos) - setpos;
 
             Drawing.DrawText(text, "Arial", pos, new Vector2(22), color, FontFlags.None);
         }
 
         private void Texture(float heightpos, string texture, Vector2 setpos)
         {
-            var pos = new Vector2(Screen.X, Screen.Y * heightpos) - setpos;
+            var pos = new Vector2(Config.Screen.X, Config.Screen.Y * heightpos) - setpos;
 
             Drawing.DrawRect(
                 pos, 
@@ -80,8 +68,8 @@ namespace VisagePlus
         private void OnDraw(EventArgs args)
         {
             var setPos = new Vector2(
-                Math.Min(TextXItem, Screen.X - 60),
-                Math.Min(TextYItem, Screen.Y - 230));
+                Math.Min(Config.TextXItem, Config.Screen.X - 60),
+                Math.Min(Config.TextYItem, Config.Screen.Y - 230));
 
             if (Config.FamiliarsLockItem)
             {

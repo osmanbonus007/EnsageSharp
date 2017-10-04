@@ -11,21 +11,14 @@ using Ensage.Common.Threading;
 using Ensage.SDK.Extensions;
 using Ensage.SDK.Handlers;
 using Ensage.SDK.Helpers;
-using Ensage.SDK.Service;
-
-using AbilityExtensions = Ensage.Common.Extensions.AbilityExtensions;
 
 namespace VisagePlus.Features
 {
-    internal class FamiliarsCombo
+    internal class FamiliarsCombo : Extensions
     {
         private Config Config { get; }
 
-        private Data Data { get; }
-
-        private VisagePlus Main { get; }
-
-        private IServiceContext Context { get; }
+        private Unit Owner { get; }
 
         private Sleeper FamiliarsSleeper { get; }
 
@@ -36,19 +29,17 @@ namespace VisagePlus.Features
         public FamiliarsCombo(Config config)
         {
             Config = config;
-            Data = config.Data;
-            Main = config.VisagePlus;
-            Context = config.VisagePlus.Context;
+            Owner = config.Main.Context.Owner;
 
             FamiliarsSleeper = new Sleeper();
 
             config.ComboKeyItem.PropertyChanged += ComboChanged;
             config.FamiliarsLockItem.PropertyChanged += FamiliarsLockChanged;
 
-            if (Config.FamiliarsLockItem)
+            if (config.FamiliarsLockItem)
             {
-                Config.FamiliarsLockItem.Item.SetValue(new KeyBind(
-                    Config.FamiliarsLockItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
+                config.FamiliarsLockItem.Item.SetValue(new KeyBind(
+                    config.FamiliarsLockItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
             }
 
             Handler = UpdateManager.Run(ExecuteAsync, true, false);
@@ -116,15 +107,13 @@ namespace VisagePlus.Features
                 }
 
                 var Familiars =
-                    EntityManager<Unit>.Entities.Where(
-                        x =>
-                        x.IsValid &&
-                        x.IsAlive &&
-                        x.IsControllable &&
-                        Context.Owner.IsAlly(x) &&
-                        (x.NetworkName == "CDOTA_Unit_VisageFamiliar" ||
-                        x.Name.Contains("npc_dota_necronomicon_warrior") ||
-                        x.Name.Contains("npc_dota_necronomicon_archer"))).ToArray();
+                    EntityManager<Unit>.Entities.Where(x =>
+                                                       x.IsValid &&
+                                                       x.IsAlive &&
+                                                       x.IsControllable &&
+                                                       !x.IsStunned() &&
+                                                       x.IsAlly(Owner) &&
+                                                       x.NetworkName == "CDOTA_Unit_VisageFamiliar").ToList();
 
                 if (Config.FamiliarsLockItem)
                 {
@@ -139,81 +128,57 @@ namespace VisagePlus.Features
                 {
                     if (Target != null)
                     {
-                        var StunDebuff = Target.Modifiers.FirstOrDefault(x => x.IsValid && x.IsStunDebuff);
-                        var HexDebuff = Target.Modifiers.FirstOrDefault(x => x.IsValid && x.Name == "modifier_sheepstick_debuff");
-                        var FamiliarDamage = Familiar.Modifiers.FirstOrDefault(x => x.IsValid && x.Name == "modifier_visage_summon_familiars_damage_charge");
-                        var FamiliarsStoneForm = Familiar.GetAbilityById(AbilityId.visage_summon_familiars_stone_form);
-                        var ManaBurn = Familiar.GetAbilityById(AbilityId.necronomicon_archer_mana_burn);
+                        var FamiliarDamage = Familiar.Modifiers.Any(x => 
+                                                                    x.IsValid && 
+                                                                    x.StackCount > Config.FamiliarsChargeItem && 
+                                                                    x.Name == "modifier_visage_summon_familiars_damage_charge");
 
-                        if (!Target.IsMagicImmune() && !Data.CancelCombo(Target))
+                        var StunDebuff = Target.Modifiers.Any(x => x.IsValid && x.IsStunDebuff && x.RemainingTime > 0.5f);
+                        var HexDebuff = Target.Modifiers.Any(x => x.IsValid && x.RemainingTime > 0.5f && x.Name == "modifier_sheepstick_debuff");
+                        var FamiliarsStoneForm = Familiar.GetAbilityById(AbilityId.visage_summon_familiars_stone_form);
+
+                        if (!Target.IsMagicImmune() && !Target.IsInvulnerable() && !Target.HasModifier("modifier_winter_wyvern_winters_curse"))
                         {
                             // FamiliarsStoneForm
-                            if (FamiliarsStoneForm != null &&
-                                Config.AbilityToggler.Value.IsEnabled(FamiliarsStoneForm.Name)
-                                && AbilityExtensions.CanBeCasted(FamiliarsStoneForm)
+                            if (Config.AbilityToggler.Value.IsEnabled(FamiliarsStoneForm.Name)
+                                && CanBeCasted(FamiliarsStoneForm, Familiar)
                                 && Familiar.Distance2D(Target) <= 100
-                                && (StunDebuff == null || StunDebuff.RemainingTime <= 0.5)
-                                && (HexDebuff == null || HexDebuff.RemainingTime <= 0.5)
-                                && (!Config.FamiliarsStoneControlItem
-                                || Data.SmartStone(Target) || FamiliarDamage.StackCount <= Config.FamiliarsChargeItem)
+                                && !StunDebuff && !HexDebuff
+                                && (!Config.FamiliarsStoneControlItem || SmartStone(Target) || !FamiliarDamage)
                                 && !FamiliarsSleeper.Sleeping)
                             {
-                                FamiliarsStoneForm.UseAbility();
+                                UseAbility(FamiliarsStoneForm, Familiar);
                                 FamiliarsSleeper.Sleep(FamiliarsStoneForm.GetAbilitySpecialData("stun_duration") * 1000 - 200);
-                                await Await.Delay(100 + (int)Game.Ping, token);
-                            }
-
-                            // Necronomicon Mana Burn
-                            if (ManaBurn != null
-                                && AbilityExtensions.CanBeCasted(ManaBurn))
-                            {
-                                ManaBurn.UseAbility(Target);
-                                await Await.Delay(100, token);
+                                await Await.Delay(GetDelay);
                             }
                         }
 
-                        if (Target != null && (Target.IsInvulnerable() || Target.IsAttackImmune()))
+                        if (Target.IsInvulnerable() || Target.IsAttackImmune())
                         {
-                            Familiar.Move(Target.Position);
-                            await Await.Delay(100, token);
+                            Move(Familiar, Target.Position);
                         }
-                        else
-
-                        if (Target != null 
-                            && Config.FamiliarsStoneControlItem
-                            && (FamiliarDamage != null && FamiliarDamage.StackCount > Config.FamiliarsChargeItem)
-                            && !Data.SmartStone(Target))
+                        else if (Config.FamiliarsStoneControlItem  && FamiliarDamage && !SmartStone(Target))
                         {
-                            Familiar.Attack(Target);
-                            await Await.Delay(100, token);
+                            Attack(Familiar, Target);
                         }
-                        else
-
-                        if (Target != null && (Target.IsMagicImmune()
-                            || !AbilityExtensions.CanBeCasted(FamiliarsStoneForm))
-                            || ((StunDebuff != null && StunDebuff.RemainingTime >= 0.5)
-                            || (HexDebuff != null && HexDebuff.RemainingTime >= 0.5)))
+                        else if ((Target.IsMagicImmune() || !CanBeCasted(FamiliarsStoneForm, Familiar)) || (StunDebuff || HexDebuff))
                         {
-                            Familiar.Attack(Target);
-                            await Await.Delay(100, token);
+                            Attack(Familiar, Target);
                         }
                         else
                         {
-                            Familiar.Move(Target.Position);
-                            await Await.Delay(100, token);
+                            Move(Familiar, Target.Position);
                         }
                     }
                     else
                     {
                         if (Config.FamiliarsFollowItem)
                         {
-                            Familiar.Move(Game.MousePosition);
-                            await Await.Delay(100, token);
+                            Move(Familiar, Game.MousePosition);
                         }
                         else
                         {
-                            Familiar.Follow(Context.Owner);
-                            await Await.Delay(100, token);
+                            Follow(Familiar, Owner);
                         }
                     }
                 }
@@ -224,7 +189,7 @@ namespace VisagePlus.Features
             }
             catch (Exception e)
             {
-                Main.Log.Error(e);
+                Config.Main.Log.Error(e);
             }
         }
     }

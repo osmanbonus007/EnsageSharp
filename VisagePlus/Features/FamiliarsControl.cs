@@ -11,36 +11,30 @@ using Ensage.Common.Objects.UtilityObjects;
 using Ensage.SDK.Extensions;
 using Ensage.SDK.Handlers;
 using Ensage.SDK.Helpers;
-using Ensage.SDK.Service;
-
-using AbilityExtensions = Ensage.Common.Extensions.AbilityExtensions;
 
 namespace VisagePlus.Features
 {
-    internal class FamiliarsControl
+    internal class FamiliarsControl : Extensions
     {
         private Config Config { get; }
 
-        private Data Data { get; }
+        private Unit Owner { get; }
 
-        private IServiceContext Context { get; }
-
-        public Sleeper FamiliarsSleeper { get; }
+        private Sleeper FamiliarsSleeper { get; }
 
         private TaskHandler Handler { get; }
 
         public FamiliarsControl(Config config)
         {
             Config = config;
-            Data = config.Data;
-            Context = config.VisagePlus.Context;
+            Owner = config.Main.Context.Owner;
 
             FamiliarsSleeper = new Sleeper();
 
             config.FollowKeyItem.PropertyChanged += FollowKeyChanged;
             config.EscapeKeyItem.PropertyChanged += EscapeKeyChanged;
 
-            if (Config.FollowKeyItem)
+            if (config.FollowKeyItem)
             {
                 config.FollowKeyItem.Item.SetValue(new KeyBind(
                     config.FollowKeyItem.Item.GetValue<KeyBind>().Key, KeyBindType.Toggle, false));
@@ -94,87 +88,82 @@ namespace VisagePlus.Features
                 }
 
                 var Familiars =
-                    EntityManager<Unit>.Entities.Where(
-                        x =>
-                        x.IsValid &&
-                        x.IsAlive &&
-                        x.IsControllable &&
-                        Context.Owner.IsAlly(x) &&
-                        x.NetworkName == "CDOTA_Unit_VisageFamiliar");
+                    EntityManager<Unit>.Entities.Where(x =>
+                                                       x.IsValid &&
+                                                       x.IsAlive &&
+                                                       x.IsControllable &&
+                                                       x.IsAlly(Owner) &&
+                                                       x.NetworkName == "CDOTA_Unit_VisageFamiliar").ToList();
 
                 var Others =
-                    EntityManager<Unit>.Entities.Where(
-                        x => !x.IsIllusion &&
-                        x.IsValid &&
-                        x.IsVisible &&
-                        x.IsAlive &&
-                        Context.Owner.IsEnemy(x));
+                    EntityManager<Unit>.Entities.Where(x => 
+                                                       !x.IsIllusion &&
+                                                       x.IsValid &&
+                                                       x.IsVisible &&
+                                                       x.IsAlive &&
+                                                       x.IsEnemy(Owner)).ToList();
 
-                foreach (var Familiar in Familiars.ToArray())
+                foreach (var Familiar in Familiars)
                 {
                     var FamiliarsStoneForm = Familiar.GetAbilityById(AbilityId.visage_summon_familiars_stone_form);
 
-                    if (Familiar.Health * 100 / Familiar.MaximumHealth <= Config.FamiliarsLowHPItem
-                        && AbilityExtensions.CanBeCasted(FamiliarsStoneForm))
+                    // Auto Stone Form
+                    if (Familiar.Health * 100 / Familiar.MaximumHealth <= Config.FamiliarsLowHPItem && CanBeCasted(FamiliarsStoneForm, Familiar))
                     {
                         FamiliarsStoneForm.UseAbility();
-                        await Await.Delay(100 + (int)Game.Ping, token);
+                        await Await.Delay(GetDelay, token);
                     }
 
+                    // Follow
                     if (Config.FollowKeyItem)
                     {
-                        Familiar.Follow(Context.Owner);
-                        await Await.Delay(100, token);
+                        Follow(Familiar, Owner);
                     }
 
+                    // Courier
                     if (Config.FamiliarsCourierItem)
                     {
                         var courier = Others.OrderBy(x => x.Distance2D(Familiar)).FirstOrDefault(x => x.NetworkName == "CDOTA_Unit_Courier");
 
                         if (courier != null && Familiar.Distance2D(courier) <= 600 && !Config.FollowKeyItem)
                         {
-                            Familiar.Attack(courier);
-                            await Await.Delay(100, token);
+                            Attack(Familiar, courier);
                         }
                     }
 
+                    // Escape
                     if (Config.EscapeKeyItem 
                         && !Config.ComboKeyItem 
                         && !Config.FamiliarsLockItem
                         && !Config.LastHitItem
                         && !Config.FollowKeyItem)
                     {
-                        var hero = Others.OrderBy(x => x.Distance2D(Context.Owner)).FirstOrDefault(x => x is Hero);
+                        var hero = Others.OrderBy(x => x.Distance2D(Owner)).FirstOrDefault(x => x is Hero);
 
                         if (hero == null 
-                            || hero.IsMagicImmune() 
-                            || Data.CancelCombo(hero) 
-                            || Context.Owner.Distance2D(hero) > 800)
+                            || hero.IsMagicImmune() || hero.IsInvulnerable() || hero.HasModifier("modifier_winter_wyvern_winters_curse")
+                            || Owner.Distance2D(hero) > 800)
                         {
-                            Familiar.Follow(Context.Owner);
-                            await Await.Delay(100, token);
-                            
+                            Follow(Familiar, Owner);
+
                             continue;
                         }
 
-                        if (FamiliarsStoneForm != null
-                                && AbilityExtensions.CanBeCasted(FamiliarsStoneForm)
-                                && Familiar.Distance2D(hero) <= 100
-                                && !FamiliarsSleeper.Sleeping)
+                        if (CanBeCasted(FamiliarsStoneForm, Familiar)
+                            && Familiar.Distance2D(hero) <= 100
+                            && !FamiliarsSleeper.Sleeping)
                         {
-                            FamiliarsStoneForm.UseAbility();
+                            UseAbility(FamiliarsStoneForm, Familiar);
                             FamiliarsSleeper.Sleep(FamiliarsStoneForm.GetAbilitySpecialData("stun_duration") * 1000 - 200);
-                            await Await.Delay(100 + (int)Game.Ping, token);
+                            await Await.Delay(GetDelay, token);
                         }
-                        else if (AbilityExtensions.CanBeCasted(FamiliarsStoneForm))
+                        else if (CanBeCasted(FamiliarsStoneForm, Familiar))
                         {
-                            Familiar.Move(hero.Position);
-                            await Await.Delay(100, token);
+                            Move(Familiar, hero.Position);
                         }
                         else
                         {
-                            Familiar.Follow(Context.Owner);
-                            await Await.Delay(100, token);
+                            Follow(Familiar, Owner);
                         }
                     }
                 }
@@ -185,7 +174,7 @@ namespace VisagePlus.Features
             }
             catch (Exception e)
             {
-                Config.VisagePlus.Log.Error(e);
+                Config.Main.Log.Error(e);
             }
         }
     }

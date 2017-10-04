@@ -23,8 +23,8 @@ namespace VisagePlus
         public UpdateMode(Config config)
         {
             Config = config;
-            Main = config.VisagePlus;
-            Context = config.VisagePlus.Context;
+            Main = config.Main;
+            Context = config.Main.Context;
 
             UpdateManager.Subscribe(OnUpdate, 25);
         }
@@ -54,8 +54,7 @@ namespace VisagePlus
                 Context.Particle.Remove("ComboRadius");
             }
 
-            if (Config.TargetItem.Value.SelectedValue.Contains("Lock")
-                && Context.TargetSelector.IsActive
+            if (Config.TargetItem.Value.SelectedValue.Contains("Lock") && Context.TargetSelector.IsActive
                 && (!Config.ComboKeyItem || Target == null || !Target.IsValid || !Target.IsAlive))
             {
                 Target = Context.TargetSelector.Active.GetTargets().FirstOrDefault() as Hero;
@@ -75,7 +74,7 @@ namespace VisagePlus
             {
                 Context.Particle.DrawTargetLine(
                     Context.Owner,
-                    "Target",
+                    "PlusTarget",
                     Target.Position,
                     Config.ComboKeyItem 
                     ? new Color(Config.TargetRedItem, Config.TargetGreenItem, Config.TargetBlueItem)
@@ -83,7 +82,7 @@ namespace VisagePlus
             }
             else
             {
-                Context.Particle.Remove("Target");
+                Context.Particle.Remove("PlusTarget");
             }
         }
     }

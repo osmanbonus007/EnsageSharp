@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 
+using Ensage;
 using Ensage.Common.Menu;
 using Ensage.SDK.Menu;
 
@@ -13,6 +14,10 @@ namespace VisagePlus
 {
     internal class Config : IDisposable
     {
+        public VisagePlus Main { get; }
+
+        public Vector2 Screen { get; }
+
         private MenuFactory Factory { get; }
 
         public MenuItem<AbilityToggler> AbilityToggler { get; }
@@ -22,6 +27,12 @@ namespace VisagePlus
         public MenuItem<AbilityToggler> LinkenBreakerToggler { get; }
 
         public MenuItem<PriorityChanger> LinkenBreakerChanger { get; }
+
+        public MenuItem<AbilityToggler> AntiMageBreakerToggler { get; }
+
+        public MenuItem<PriorityChanger> AntiMageBreakerChanger { get; }
+
+        public MenuItem<bool> UseOnlyFromRangeItem { get; }
 
         public MenuFactory DrawingMenu { get; }
 
@@ -44,6 +55,10 @@ namespace VisagePlus
         public MenuItem<bool> ComboRadiusItem { get; }
 
         public MenuItem<bool> TextItem { get; }
+
+        public MenuItem<Slider> TextXItem { get; }
+
+        public MenuItem<Slider> TextYItem { get; }
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
@@ -79,40 +94,34 @@ namespace VisagePlus
 
         public MenuItem<StringList> TargetItem { get; }
 
-        public MenuItem<AbilityToggler> AntimageBreakerToggler { get; }
-
-        public MenuItem<PriorityChanger> AntimageBreakerChanger { get; }
-
         public MenuItem<bool> BladeMailItem { get; }
 
-        public Data Data { get; }
+        public UpdateMode UpdateMode { get; }
+
+        private Mode Mode { get; }
 
         public LinkenBreaker LinkenBreaker { get; }
 
-        public FamiliarsControl FamiliarsControl { get; }
+        private FamiliarsControl FamiliarsControl { get; }
 
-        public FamiliarsCombo FamiliarsCombo { get; }
+        private FamiliarsCombo FamiliarsCombo { get; }
 
         private FamiliarsLastHit FamiliarsLastHit { get; }
 
-        public AutoUsage AutoUsage { get; }
-
-        public VisagePlus VisagePlus { get; }
-
-        public Mode Mode { get; }
-
-        public UpdateMode UpdateMode { get; }
+        private AutoAbility AutoAbility { get; }
 
         private Renderer Renderer { get; }
 
         private bool Disposed { get; set; }
 
-        public Config(VisagePlus visageplus)
+        public Config(VisagePlus main)
         {
-            VisagePlus = visageplus;
+            Main = main;
+            Screen = new Vector2(Drawing.Width - 160, Drawing.Height);
 
             Factory = MenuFactory.CreateWithTexture("VisagePlus", "npc_dota_hero_visage");
             Factory.Target.SetFontColor(Color.Aqua);
+
             var AbilitiesMenu = Factory.Menu("Abilities");
             AbilityToggler = AbilitiesMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
@@ -130,6 +139,8 @@ namespace VisagePlus
                 { "item_dagon_5", true },
                 { "item_veil_of_discord", true },
                 { "item_ethereal_blade", true },
+                { "item_heavens_halberd", true },
+                { "item_hurricane_pike", true },
                 { "item_solar_crest", true },
                 { "item_medallion_of_courage", true },
                 { "item_rod_of_atos", true },
@@ -139,54 +150,64 @@ namespace VisagePlus
             }));
 
             var LinkenBreakerMenu = Factory.MenuWithTexture("Linken Breaker", "item_sphere");
-            LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("linkensphere", "Linkens Sphere:"));
+            LinkenBreakerToggler = LinkenBreakerMenu.Item("Use: ", "linkentoggler", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "visage_soul_assumption", true },
                 { "item_sheepstick", true},
                 { "item_rod_of_atos", true},
                 { "item_bloodthorn", true },
                 { "item_orchid", true },
+                { "item_heavens_halberd", true },
                 { "item_cyclone", true },
                 { "item_force_staff", true }
             }));
 
-            LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            LinkenBreakerChanger = LinkenBreakerMenu.Item("Priority: ", "linkenchanger", new PriorityChanger(new List<string>
             {
                 { "visage_soul_assumption" },
                 { "item_sheepstick" },
                 { "item_rod_of_atos" },
                 { "item_bloodthorn" },
                 { "item_orchid" },
+                { "item_heavens_halberd" },
                 { "item_cyclone" },
                 { "item_force_staff" }
             }));
 
-            var AntimageBreakerMenu = Factory.MenuWithTexture("Anti Mage Breaker", "antimage_spell_shield");
-            AntimageBreakerToggler = AntimageBreakerMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("empty", ""));
+
+            LinkenBreakerMenu.Target.AddItem(new MenuItem("antiMagespellshield", "AntiMage Spell Shield:"));
+            AntiMageBreakerToggler = LinkenBreakerMenu.Item("Use: ", "antimagetoggler", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "visage_soul_assumption", true },
                 { "item_rod_of_atos", true},
+                { "item_heavens_halberd", true },
                 { "item_cyclone", true },
                 { "item_force_staff", true }
             }));
 
-            AntimageBreakerChanger = AntimageBreakerMenu.Item("Priority: ", new PriorityChanger(new List<string>
+            AntiMageBreakerChanger = LinkenBreakerMenu.Item("Priority: ", "antimagechanger", new PriorityChanger(new List<string>
             {
                 { "visage_soul_assumption" },
                 { "item_rod_of_atos" },
+                { "item_heavens_halberd" },
                 { "item_cyclone" },
                 { "item_force_staff" }
             }));
 
-            var AutoUsageMenu = Factory.Menu("Auto Usage");
-            KillStealItem = AutoUsageMenu.Item("Auto Kill Steal", true);
-            KillStealToggler = AutoUsageMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
+            UseOnlyFromRangeItem = LinkenBreakerMenu.Item("Use Only From Range", false);
+            UseOnlyFromRangeItem.Item.SetTooltip("Use only from the Range and do not use another Ability");
+
+            var AutoAbilityMenu = Factory.Menu("Auto Ability");
+            KillStealItem = AutoAbilityMenu.Item("Auto Kill Steal", true);
+            KillStealToggler = AutoAbilityMenu.Item("Use: ", new AbilityToggler(new Dictionary<string, bool>
             {
                 { "item_dagon_5", true },
                 { "visage_soul_assumption", true}
             }));
 
-            AutoSoulAssumptionItem = AutoUsageMenu.Item("Auto Soul Assumption", true);
+            AutoSoulAssumptionItem = AutoAbilityMenu.Item("Auto Soul Assumption", true);
 
             var FamiliarsMenu = Factory.Menu("Familiars");
             var FamiliarsLastHitMenu = FamiliarsMenu.Menu("Last Hit");
@@ -204,7 +225,7 @@ namespace VisagePlus
             FamiliarsStoneControlItem.Item.SetTooltip("Stone will work looking at the amount of charge");
             FamiliarsChargeItem = FamiliarsMenu.Item("Damage Charge", new Slider(3, 0, 5));
 
-            DrawingMenu = Factory.Menu("Drawing");
+            var DrawingMenu = Factory.Menu("Drawing");
             var TargetMenu = DrawingMenu.Menu("Target");
             DrawTargetItem = TargetMenu.Item("Target Enable", true);
             TargetRedItem = TargetMenu.Item("Red", "red", new Slider(255, 0, 255));
@@ -225,6 +246,8 @@ namespace VisagePlus
             ComboRadiusItem = DrawingMenu.Item("Combo Stable Radius", true);
             ComboRadiusItem.Item.SetTooltip("I suggest making a combo in this radius");
             TextItem = DrawingMenu.Item("Text", true);
+            TextXItem = DrawingMenu.Item("X", new Slider(0, 0, (int)Screen.X - 60));
+            TextYItem = DrawingMenu.Item("Y", new Slider(0, 0, (int)Screen.Y - 200));
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
             MinDisInOrbwalkItem = Factory.Item("Min Distance in OrbWalk", new Slider(0, 0, 600));
@@ -236,18 +259,17 @@ namespace VisagePlus
 
             ComboKeyItem.Item.ValueChanged += HotkeyChanged;
 
+            UpdateMode = new UpdateMode(this);
+
             var Key = KeyInterop.KeyFromVirtualKey((int)ComboKeyItem.Value.Key);
+            Mode = new Mode(Main.Context, Key, this);
+            Main.Context.Orbwalker.RegisterMode(Mode);
 
-            Mode = new Mode(VisagePlus.Context, Key, this);
-            VisagePlus.Context.Orbwalker.RegisterMode(Mode);
-
-            Data = new Data();
             LinkenBreaker = new LinkenBreaker(this);
             FamiliarsControl = new FamiliarsControl(this);
             FamiliarsCombo = new FamiliarsCombo(this);
             FamiliarsLastHit = new FamiliarsLastHit(this);
-            AutoUsage = new AutoUsage(this);
-            UpdateMode = new UpdateMode(this);
+            AutoAbility = new AutoAbility(this);
             Renderer = new Renderer(this);
         }
 
@@ -285,17 +307,16 @@ namespace VisagePlus
 
             if (disposing)
             {
-                Factory.Dispose();
                 Renderer.Dispose();
-                UpdateMode.Dispose();
+                AutoAbility.Dispose();
                 FamiliarsLastHit.Dispose();
-                AutoUsage.Dispose();
-                FamiliarsControl.Dispose();
-                VisagePlus.Context.Orbwalker.UnregisterMode(Mode);
                 FamiliarsCombo.Dispose();
-                Mode.Deactivate();
-                VisagePlus.Context.Particle.Dispose();
+                FamiliarsControl.Dispose();
+                UpdateMode.Dispose();
+                Main.Context.Orbwalker.UnregisterMode(Mode);
+                Main.Context.Particle.Dispose();
                 ComboKeyItem.Item.ValueChanged -= HotkeyChanged;
+                Factory.Dispose();
             }
 
             Disposed = true;
