@@ -3,6 +3,7 @@ using System.Reflection;
 
 using Ensage;
 using Ensage.SDK.Abilities;
+using Ensage.SDK.Abilities.Aggregation;
 using Ensage.SDK.Abilities.npc_dota_hero_enchantress;
 using Ensage.SDK.Service;
 using Ensage.SDK.Service.Metadata;

@@ -3,6 +3,7 @@ using System.Reflection;
 
 using Ensage;
 using Ensage.SDK.Abilities;
+using Ensage.SDK.Abilities.Aggregation;
 using Ensage.SDK.Abilities.npc_dota_hero_visage;
 using Ensage.SDK.Service;
 using Ensage.SDK.Service.Metadata;
@@ -10,6 +11,7 @@ using Ensage.SDK.Abilities.Items;
 using Ensage.SDK.Inventory.Metadata;
 
 using log4net;
+
 using PlaySharp.Toolkit.Logging;
 
 namespace VisagePlus
