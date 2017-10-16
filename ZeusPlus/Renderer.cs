@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Ensage;
 
 using SharpDX;
+using Ensage.SDK.Extensions;
 
 namespace ZeusPlus
 {
@@ -26,9 +27,9 @@ namespace ZeusPlus
             Owner = config.Main.Context.Owner;
             UpdateMode = config.UpdateMode;
 
-            config.Menu.TextItem.PropertyChanged += TextChanged;
+            config.Menu.OnDrawItem.PropertyChanged += TextChanged;
 
-            if (config.Menu.TextItem)
+            if (config.Menu.OnDrawItem)
             {
                 Drawing.OnDraw += OnDraw;
             }
@@ -36,17 +37,17 @@ namespace ZeusPlus
 
         public void Dispose()
         {
-            if (Menu.TextItem)
+            if (Menu.OnDrawItem)
             {
                 Drawing.OnDraw -= OnDraw;
             }
 
-            Menu.TextItem.PropertyChanged -= TextChanged;
+            Menu.OnDrawItem.PropertyChanged -= TextChanged;
         }
 
         private void TextChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Menu.TextItem)
+            if (Menu.OnDrawItem)
             {
                 Drawing.OnDraw += OnDraw;
             }
@@ -70,8 +71,8 @@ namespace ZeusPlus
             foreach (var Data in Config.DamageCalculation.DamageList)
             {
                 var setPos = new Vector2(
-                    Math.Min((Config.Screen.X - 20) - Menu.TextXItem, Config.Screen.X - 20),
-                    Math.Min(Menu.TextYItem - 100, Config.Screen.Y - 90));
+                    Math.Min((Config.Screen.X - 20) - Menu.OnDrawXItem, Config.Screen.X - 20),
+                    Math.Min(Menu.OnDrawYItem - 100, Config.Screen.Y - 90));
 
                 var pos = new Vector2(Config.Screen.X, Config.Screen.Y * 0.65f + i) - setPos;
 
@@ -79,12 +80,18 @@ namespace ZeusPlus
                 var health = Data.GetHealth;
 
                 var ph = Math.Ceiling((float)health / hero.MaximumHealth * 100);
+                var doNotKill = DoNotKill(hero);
 
                 if (!hero.IsVisible)
                 {
-                    Texture(pos + 5, new Vector2(55, 55), $"heroes_round/{ hero.Name.Substring("npc_dota_hero_".Length) }");
-                    Texture(pos, new Vector2(65, 65), "other/round_percentage/frame/white");
-                    Texture(pos, new Vector2(65, 65), $"other/round_percentage/hp/{ Math.Min(ph, 100) }");
+                    Texture(pos + 5, new Vector2(55), $"heroes_round/{ hero.Name.Substring("npc_dota_hero_".Length) }");
+                    Texture(pos, new Vector2(65), "other/round_percentage/frame/white");
+                    Texture(pos, new Vector2(65), $"other/round_percentage/hp/{ Math.Min(ph, 100) }");
+
+                    if (doNotKill != null)
+                    {
+                        Texture(pos + new Vector2(42, 45), new Vector2(20), $"modifier_textures/round/{ doNotKill }");
+                    }
 
                     i += 80;
                     continue;
@@ -101,24 +108,42 @@ namespace ZeusPlus
 
                 if (damagePercent >= 100)
                 {
-                    Texture(pos - 10, new Vector2(85, 85), $"other/round_percentage/alert/{ Alert() }");
+                    Texture(pos - 10, new Vector2(85), $"other/round_percentage/alert/{ Alert() }");
                 }
 
-                Texture(pos + 5, new Vector2(55, 55), $"heroes_round/{ hero.Name.Substring("npc_dota_hero_".Length) }");
-                Texture(pos, new Vector2(65, 65), "other/round_percentage/frame/white");
-                Texture(pos, new Vector2(65, 65), $"other/round_percentage/no_percent_gray/{ Math.Min(totalDamagePercent, 100) }");
-                Texture(pos, new Vector2(65, 65), $"other/round_percentage/no_percent_yellow/{ Math.Min(readyDamagePercent, 100) }");
+                Texture(pos + 5, new Vector2(55), $"heroes_round/{ hero.Name.Substring("npc_dota_hero_".Length) }");
+
+                Texture(pos, new Vector2(65), "other/round_percentage/frame/white");
+                Texture(pos, new Vector2(65), $"other/round_percentage/no_percent_gray/{ Math.Min(totalDamagePercent, 100) }");
+                Texture(pos, new Vector2(65), $"other/round_percentage/no_percent_yellow/{ Math.Min(readyDamagePercent, 100) }");
 
                 var color = damagePercent >= 100 ? "green" : "red";
-                Texture(pos, new Vector2(65, 65), $"other/round_percentage/{ color }/{ Math.Min(damagePercent, 100) }");
+                Texture(pos, new Vector2(65), $"other/round_percentage/{ color }/{ Math.Min(damagePercent, 100) }");
 
                 if (damagePercent >= 100)
                 {
-                    Texture(pos, new Vector2(65, 65), $"other/round_percentage/no_percent_gray/{ Math.Min(damagePercent - 100, 100) }");
+                    Texture(pos, new Vector2(65), $"other/round_percentage/no_percent_gray/{ Math.Min(damagePercent - 100, 100) }");
+                }
+
+                if (doNotKill != null)
+                {
+                    Texture(pos + new Vector2(42, 45), new Vector2(20), $"modifier_textures/round/{ doNotKill }");
                 }
 
                 i += 80;
             }
+        }
+
+        private string DoNotKill(Hero hero)
+        {
+            var reincarnation = hero.GetAbilityById(AbilityId.skeleton_king_reincarnation);
+            if (reincarnation != null && reincarnation.Cooldown == 0 && reincarnation.Level > 0)
+            {
+                return reincarnation.TextureName;
+            }
+
+
+            return null;
         }
 
         private string Alert()

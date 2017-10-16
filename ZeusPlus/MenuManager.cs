@@ -68,11 +68,11 @@ namespace ZeusPlus
 
         public MenuItem<bool> BlinkRadiusItem { get; }
 
-        public MenuItem<bool> TextItem { get; }
+        public MenuItem<bool> OnDrawItem { get; }
 
-        public MenuItem<Slider> TextXItem { get; }
+        public MenuItem<Slider> OnDrawXItem { get; }
 
-        public MenuItem<Slider> TextYItem { get; }
+        public MenuItem<Slider> OnDrawYItem { get; }
 
         public MenuItem<KeyBind> ComboKeyItem { get; }
 
@@ -218,9 +218,9 @@ namespace ZeusPlus
             LightningBoltRadiusItem = DrawingMenu.Item("Lightning Bolt Radius", true);
             BlinkRadiusItem = DrawingMenu.Item("Blink Radius", true);
 
-            TextItem = DrawingMenu.Item("On Draw", true);
-            TextXItem = DrawingMenu.Item("X", new Slider(0, 0, (int)config.Screen.X + 65));
-            TextYItem = DrawingMenu.Item("Y", new Slider(500, 0, (int)config.Screen.Y - 90));
+            OnDrawItem = DrawingMenu.Item("On Draw", true);
+            OnDrawXItem = DrawingMenu.Item("X", new Slider(0, 0, (int)config.Screen.X + 65));
+            OnDrawYItem = DrawingMenu.Item("Y", new Slider(500, 0, (int)config.Screen.Y - 90));
 
             ComboKeyItem = Factory.Item("Combo Key", new KeyBind('D'));
             OrbwalkerItem = Factory.Item("Orbwalker", new StringList("Free", "Distance", "Default"));

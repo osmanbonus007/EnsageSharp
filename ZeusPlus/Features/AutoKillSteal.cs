@@ -103,8 +103,7 @@ namespace ZeusPlus.Features
 
                 var target = damage.GetHero;
 
-                if (target.IsMagicImmune() || target.IsInvulnerable()
-                    || target.HasAnyModifiers("modifier_dazzle_shallow_grave"))
+                if (Cancel(target))
                 {
                     return;
                 }
@@ -211,6 +210,16 @@ namespace ZeusPlus.Features
             {
                 Main.Log.Error(e);
             }
+        }
+
+        private bool Cancel(Hero target)
+        {
+            var reincarnation = target.GetAbilityById(AbilityId.skeleton_king_reincarnation);
+
+            return target.IsMagicImmune()
+                || target.IsInvulnerable()
+                || target.HasAnyModifiers("modifier_dazzle_shallow_grave")
+                || (reincarnation != null && reincarnation.Cooldown == 0 && reincarnation.Level > 0);
         }
 
         private void Stop()
